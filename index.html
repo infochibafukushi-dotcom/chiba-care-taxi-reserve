@@ -215,6 +215,10 @@
 
     .sheet-row-clickable{ cursor:pointer; }
     .sheet-row-clickable:hover{ background:#f0f9ff !important; }
+
+    .hidden{
+      display:none !important;
+    }
   </style>
 </head>
 
@@ -233,8 +237,11 @@
       <header id="calendarHeader" class="text-center mb-4 relative px-3 pt-3">
         <div class="inline-flex items-center justify-center gap-3">
           <button id="adminLoginBtn" class="cursor-pointer select-none" aria-label="管理画面" type="button">
-            <img id="adminLoginImg" alt="管理画面"
+            <img
+              id="adminLoginImg"
+              alt="管理画面"
               src="https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png"
+            >
           </button>
           <div>
             <h1 id="mainTitle" class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">介護タクシー予約</h1>
@@ -597,10 +604,14 @@
       ov.style.display = 'none';
     }
   }
+
   async function withLoading(fn, text){
     showLoading(true, text);
-    try{ return await fn(); }
-    finally{ showLoading(false); }
+    try{
+      return await fn();
+    }finally{
+      showLoading(false);
+    }
   }
 
   function _jsonpCall(url){
@@ -769,6 +780,7 @@
   };
 
   const TRIGGER_URL = 'https://script.google.com/macros/s/AKfycbxzM8EPlE-1hwHx6qwh4Q1jXgYa0nyc3_WtK0NYbYbcm5JExMJOi1zzjQocUhsoCuUQ/exec?secret=secret1';
+
   function fireTrigger(){
     try{
       if (!TRIGGER_URL) return;
@@ -849,6 +861,7 @@
     const weekdays = ['日','月','火','水','木','金','土'];
     return `${month}/${day}(${weekdays[date.getDay()]})`;
   }
+
   function formatDateForId(date, hour, minute) {
     const year = date.getFullYear();
     const month = String(date.getMonth()+1).padStart(2,'0');
@@ -857,6 +870,7 @@
     const minuteStr = String(minute).padStart(2,'0');
     return `${year}${month}${day}${hourStr}${minuteStr}`;
   }
+
   function toLocalDateTime(dateStr, hour, minute){
     const [y,m,d] = String(dateStr).split('-').map(Number);
     return new Date(y, m-1, d, Number(hour), Number(minute||0), 0, 0);
@@ -911,7 +925,7 @@
       const start = toLocalDateTime(d, h, m);
       const slots = reservationBlockSlots(r);
       for (let i=0;i<slots;i++){
-        const dt = new Date(start.getTime() + i*30*60*1000);
+        const dt = new Date(start.getTime() + i * 30 * 60 * 1000);
         reservedSlots.add(`${ymdLocal(dt)}-${dt.getHours()}-${dt.getMinutes()}`);
       }
     });
@@ -998,7 +1012,11 @@
     if (!grid || !dateRangeEl) return;
 
     const dates = getDatesRange();
-    if (isAdmin) adminCalendarDates = dates; else calendarDates = dates;
+    if (isAdmin) {
+      adminCalendarDates = dates;
+    } else {
+      calendarDates = dates;
+    }
 
     dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length-1])}`;
 
@@ -1008,7 +1026,7 @@
     html += '<div class="time-label sticky-corner">時間</div>';
 
     dates.forEach((date, idx)=>{
-      const isWeekend = (date.getDay()===0 || date.getDay()===6);
+      const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
 
       if (isAdmin){
         const dateStr = ymdLocal(date);
@@ -1018,7 +1036,7 @@
         const btnClass = fullBlocked ? 'day-btn day-btn-unblock' : 'day-btn day-btn-block';
 
         html += `
-          <div class="date-header sticky-top ${isWeekend?'weekend':''}" data-date-idx="${idx}">
+          <div class="date-header sticky-top ${isWeekend ? 'weekend' : ''}" data-date-idx="${idx}">
             <div class="flex flex-col items-center gap-1">
               <div>${formatDate(date)}</div>
               <button class="${btnClass}"
@@ -1031,7 +1049,7 @@
           </div>
         `;
       } else {
-        html += `<div class="date-header sticky-top ${isWeekend?'weekend':''}" data-date-idx="${idx}">${formatDate(date)}</div>`;
+        html += `<div class="date-header sticky-top ${isWeekend ? 'weekend' : ''}" data-date-idx="${idx}">${formatDate(date)}</div>`;
       }
     });
 
@@ -1046,7 +1064,9 @@
 
         html += `<div class="${slotClass} p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
                   data-action="slot"
-                  data-date-idx="${idx}" data-hour="${slot.hour}" data-minute="${slot.minute}">
+                  data-date-idx="${idx}"
+                  data-hour="${slot.hour}"
+                  data-minute="${slot.minute}">
                   ${blocked ? 'X' : '◎'}
                 </div>`;
       }
@@ -1057,7 +1077,7 @@
       html += '<div class="time-label sticky-left" style="font-weight:bold;background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 100%);color:#0e7490;border:2px solid #06b6d4;">他時間</div>';
 
       dates.forEach((date, idx)=>{
-        const isWeekend = (date.getDay()===0 || date.getDay()===6);
+        const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
 
         if (isAdmin){
           const dateStr = ymdLocal(date);
@@ -1067,7 +1087,7 @@
           const btnClass = fullBlocked ? 'day-btn day-btn-unblock' : 'day-btn day-btn-block';
 
           html += `
-            <div class="date-header ${isWeekend?'weekend':''}"
+            <div class="date-header ${isWeekend ? 'weekend' : ''}"
               style="background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 100%);border-color:#06b6d4;color:#0e7490;"
               data-date-idx="${idx}">
               <div class="flex flex-col items-center gap-1">
@@ -1082,7 +1102,7 @@
             </div>
           `;
         } else {
-          html += `<div class="date-header ${isWeekend?'weekend':''}"
+          html += `<div class="date-header ${isWeekend ? 'weekend' : ''}"
                     style="background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 100%);border-color:#06b6d4;color:#0e7490;"
                     data-date-idx="${idx}">${formatDate(date)}</div>`;
         }
@@ -1099,7 +1119,9 @@
 
           html += `<div class="${slotClass} p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
                     data-action="slot"
-                    data-date-idx="${idx}" data-hour="${slot.hour}" data-minute="${slot.minute}">
+                    data-date-idx="${idx}"
+                    data-hour="${slot.hour}"
+                    data-minute="${slot.minute}">
                     ${blocked ? 'X' : '◎'}
                   </div>`;
         }
@@ -1118,7 +1140,7 @@
       if (!grid) return;
 
       grid.addEventListener('click', async (ev)=>{
-        const el = ev.target?.closest?.('[data-action]');
+        const el = ev.target && ev.target.closest ? ev.target.closest('[data-action]') : null;
         if (!el) return;
 
         const action = el.dataset.action;
@@ -1156,7 +1178,7 @@
           return;
         }
 
-                if (action === 'slot'){
+        if (action === 'slot'){
           const dateIdx = Number(el.dataset.dateIdx);
           const hour = Number(el.dataset.hour);
           const minute = Number(el.dataset.minute || 0);
@@ -1173,7 +1195,6 @@
             openBookingForm(date, hour, minute);
           }
         }
-        
       }, { passive: false });
     };
 
@@ -1189,7 +1210,6 @@
     try{
       await withLoading(async ()=>{
         await gsRun('api_toggleBlock', dateStr, hour, minute);
-
         await waitAndRefresh_(700);
         renderCalendar(true);
         renderCalendar(false);
@@ -1275,6 +1295,7 @@
       '4階移動': PRICES.STAIR_4F,
       '5階移動': PRICES.STAIR_5F
     };
+
     if (stairPrices[stairAssistance]){
       total += stairPrices[stairAssistance];
       breakdown.push({ name:`階段介助(${stairAssistance})`, price:stairPrices[stairAssistance] });
@@ -1663,14 +1684,11 @@
     };
   }
 
-　　  
-    async function loadAdminIconWithFallback(){
+  async function loadAdminIconWithFallback(){
     const img = document.getElementById('adminLoginImg');
     if (!img) return;
-　
-　　src="https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png"
-}
-      
+    img.src = 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+  }
 
   async function init(){
     try{
@@ -1819,9 +1837,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
