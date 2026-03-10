@@ -1156,7 +1156,7 @@
           return;
         }
 
-        if (action === 'slot'){
+                if (action === 'slot'){
           const dateIdx = Number(el.dataset.dateIdx);
           const hour = Number(el.dataset.hour);
           const minute = Number(el.dataset.minute || 0);
@@ -1168,10 +1168,12 @@
           if (isAdmin){
             await handleAdminSlotClick(date, hour, minute);
           } else {
-            const blocked = isSlotBlockedWithMinute(date, slot.hour, slot.minute);
-            if (!blocked) openBookingForm(date, hour, minute);
+            const blocked = isSlotBlockedWithMinute(date, hour, minute);
+            if (blocked) return;
+            openBookingForm(date, hour, minute);
           }
         }
+        
       }, { passive: false });
     };
 
@@ -1820,6 +1822,7 @@
   </script>
 </body>
 </html>
+
 
 
 
