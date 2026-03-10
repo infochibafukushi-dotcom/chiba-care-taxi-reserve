@@ -20,7 +20,6 @@
     .gradient-header{background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:25px;padding:24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(16,185,129,.2)}
     .gradient-header-pink{background:linear-gradient(135deg,#ec4899 0%,#db2777 100%);border-radius:25px;padding:24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(236,72,153,.2)}
 
-    /* ===== カレンダー基本 ===== */
     .calendar-grid{
       display:grid;
       gap:6px;
@@ -57,7 +56,6 @@
     .admin-slot-available:hover{transform:scale(1.05)}
     .admin-slot-unavailable{background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);color:#fff;cursor:pointer;border-radius:12px;font-weight:800}
 
-    /* 他時間（ユーザー） */
     .slot-alternate{
       background:linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);
       color:#fff;
@@ -135,14 +133,12 @@
     .stat-number{font-size:28px;font-weight:900;color:#10b981}
     .stat-label{font-size:12px;color:#666;margin-top:4px;font-weight:700}
 
-    /* toast */
     #toast{
       position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
       background:rgba(17,24,39,.92);color:#fff;padding:10px 14px;border-radius:999px;
       font-weight:700;font-size:13px;z-index:2200;display:none;box-shadow:0 10px 25px rgba(0,0,0,.25)
     }
 
-    /* loading overlay */
     #loadingOverlay{
       position:fixed;inset:0;display:none;align-items:center;justify-content:center;
       background:rgba(255,255,255,.68);
@@ -174,7 +170,6 @@
       overscroll-behavior: contain;
     }
 
-    /* スマホ最適化 */
     @media (max-width: 640px){
       .time-label,.date-header{
         min-height:34px;
@@ -206,7 +201,6 @@
       .stat-label{ font-size:10px !important; margin-top:2px !important; }
     }
 
-    /* アイコンボタン（Drive画像） */
     #adminLoginBtn{
       width:64px;height:64px;
       display:inline-flex;align-items:center;justify-content:center;
@@ -219,7 +213,6 @@
     #adminLoginBtn:hover{transform:scale(1.07)}
     #adminLoginBtn img{width:100%;height:100%;object-fit:contain;display:block}
 
-    /* ✅ シート行クリック用 */
     .sheet-row-clickable{ cursor:pointer; }
     .sheet-row-clickable:hover{ background:#f0f9ff !important; }
   </style>
@@ -236,7 +229,6 @@
   </div>
 
   <div id="app" class="h-full overflow-hidden">
-    <!-- Calendar View -->
     <div id="calendarView" class="p-0">
       <header id="calendarHeader" class="text-center mb-4 relative px-3 pt-3">
         <div class="inline-flex items-center justify-center gap-3">
@@ -278,7 +270,6 @@
       </div>
     </div>
 
-    <!-- Booking Form Modal -->
     <div id="bookingModal" class="modal-overlay hidden">
       <div class="modal-content w-full max-w-lg max-h-[95vh] overflow-y-auto">
         <div class="gradient-header sticky top-0">
@@ -433,7 +424,6 @@
       </div>
     </div>
 
-    <!-- Booking Complete Modal -->
     <div id="completeModal" class="modal-overlay hidden">
       <div class="modal-content w-full max-w-md p-8 text-center">
         <div class="text-6xl mb-6">✓</div>
@@ -459,7 +449,6 @@
       </div>
     </div>
 
-    <!-- Password Modal -->
     <div id="passwordModal" class="modal-overlay hidden">
       <div class="modal-content w-full max-w-sm p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">🔑 管理者ログイン</h2>
@@ -472,7 +461,6 @@
       </div>
     </div>
 
-    <!-- Admin View -->
     <div id="adminView" class="p-0 hidden">
       <header id="adminHeader" class="flex items-center justify-between mb-6 px-3 pt-3">
         <div class="flex items-center gap-3">
@@ -516,7 +504,6 @@
         </div>
       </div>
 
-      <!-- Sheet Modal -->
       <div id="sheetModal" class="modal-overlay hidden">
         <div class="modal-content w-full max-w-6xl max-h-[90vh] overflow-auto">
           <div class="gradient-header sticky top-0">
@@ -559,7 +546,6 @@
       </div>
     </div>
 
-    <!-- Reservation Detail Modal -->
     <div id="detailModal" class="modal-overlay hidden">
       <div class="modal-content w-full max-w-lg">
         <div class="gradient-header-pink sticky top-0">
@@ -585,55 +571,107 @@
   </div>
 
   <script>
-  // ===== 固定：管理入口アイコンのfileId（あなたの指定） =====
   const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
+  const API_URL = "https://script.google.com/macros/s/AKfycbyP8SUliYbzsysB5x8iq2U4G62qp_0K_uYfUTYMuDOdQQ4cVaCgbY_2gx-1hn0EhpH_1w/exec";
 
-  // -------- GAS bridge --------
-  const gsRun = (func, ...args) => new Promise((resolve, reject) => {
-  const isIgnorableAuthError = (m) => {
-    const s = String(m || '');
-    return (
-      s.includes('UrlFetchApp.fetch') ||
-      s.includes('script.external_request') ||
-      s.includes('必要な権限') && s.includes('external_request')
-    );
-  };
+  const gsRun = async (func, ...args) => {
+    const isIgnorableAuthError = (m) => {
+      const s = String(m || '');
+      return (
+        s.includes('UrlFetchApp.fetch') ||
+        s.includes('script.external_request') ||
+        (s.includes('必要な権限') && s.includes('external_request'))
+      );
+    };
 
-  try{
-    google.script.run
-      .withSuccessHandler((res) => {
-        try{
-          if (res && res.isOk === false){
-            const msg = res.error || res.message || '通信エラー（isOk=false）';
+    try {
+      let res;
 
-            // ✅ この権限エラーだけは利用者に見せない
-            if (!isIgnorableAuthError(msg)) toast(msg);
+      if (func === 'api_getConfig') {
+        res = await fetch(`${API_URL}?action=getConfig`, { method: 'GET' });
+      } else if (func === 'api_getInitData') {
+        res = await fetch(`${API_URL}?action=getInitData`, { method: 'GET' });
+      } else if (func === 'api_getDriveImageDataUrl') {
+        const fileId = args[0];
+        res = await fetch(`${API_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`, { method: 'GET' });
+      } else if (func === 'api_createReservation') {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'createReservation',
+            payload: args[0]
+          })
+        });
+      } else if (func === 'api_updateReservation') {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'updateReservation',
+            payload: args[0]
+          })
+        });
+      } else if (func === 'api_toggleBlock') {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'toggleBlock',
+            payload: {
+              dateStr: args[0],
+              hour: args[1],
+              minute: args[2]
+            }
+          })
+        });
+      } else if (func === 'api_setRegularDayBlocked') {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'setRegularDayBlocked',
+            payload: {
+              dateStr: args[0],
+              isBlocked: args[1]
+            }
+          })
+        });
+      } else if (func === 'api_setOtherTimeDayBlocked') {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'setOtherTimeDayBlocked',
+            payload: {
+              dateStr: args[0],
+              isBlocked: args[1]
+            }
+          })
+        });
+      } else {
+        throw new Error(`未対応のAPIです: ${func}`);
+      }
 
-            reject(new Error(msg));
-            return;
-          }
-        }catch(_){}
-        resolve(res);
-      })
-      .withFailureHandler((err) => {
-        let msg = '通信エラー';
-        try{
-          msg = (err && (err.message || err.toString()))
-            ? (err.message || err.toString())
-            : '通信エラー';
-        }catch(_){}
+      if (!res.ok) {
+        throw new Error(`通信エラー HTTP ${res.status}`);
+      }
 
-        // ✅ この権限エラーだけは利用者に見せない
+      const data = await res.json();
+
+      if (data && data.isOk === false) {
+        const msg = data.error || data.message || '通信エラー（isOk=false）';
         if (!isIgnorableAuthError(msg)) toast(msg);
+        throw new Error(msg);
+      }
 
-        reject(err);
-      })[func](...args);
-  }catch(e){
-    // ここは本当に通信周りなので表示してOK（消したいならここも同様に条件付け可能）
-    toast('通信エラー（google.script.run）');
-    reject(e);
-  }
-});
+      return data;
+    } catch (e) {
+      const msg = e?.message || '通信エラー';
+      if (!isIgnorableAuthError(msg)) toast(msg);
+      throw e;
+    }
+  };
 
   function toast(msg='通信エラー', ms=2200){
     const el = document.getElementById('toast');
@@ -644,7 +682,6 @@
     window.__toastTimer = setTimeout(()=> el.style.display='none', ms);
   }
 
-  // 読み込み表示（長い時だけ出す：チラつき防止）
   let __loadingTimer = null;
   function showLoading(show, text='読み込み中...'){
     const ov = document.getElementById('loadingOverlay');
@@ -666,7 +703,6 @@
     finally{ showLoading(false); }
   }
 
-  // ✅ トリガー用URL（既存維持）
   const TRIGGER_URL = 'https://script.google.com/macros/s/AKfycbxzM8EPlE-1hwHx6qwh4Q1jXgYa0nyc3_WtK0NYbYbcm5JExMJOi1zzjQocUhsoCuUQ/exec?secret=secret1';
   function fireTrigger(){
     try{
@@ -706,7 +742,6 @@
     return s;
   }
 
-  // State
   let reservations = [];
   let blockedSlots = new Set();
   let reservedSlots = new Set();
@@ -791,11 +826,10 @@
     });
   }
 
-  // 予約ブロック枠（指定反映）
   function reservationBlockSlots(r){
     const rt = String(r?.round_trip || '').trim();
-    if (rt === '待機' || rt === '病院付き添い') return 4; // 120分
-    return 2; // 60分
+    if (rt === '待機' || rt === '病院付き添い') return 4;
+    return 2;
   }
 
   function rebuildReservedSlotsFromReservations(list){
@@ -823,7 +857,6 @@
     return blockedSlots.has(key) || reservedSlots.has(key);
   }
 
-  // 通常時間 全枠判定（6:00〜21:00、21:30なし）
   function isRegularFullyBlocked(dateStr){
     for (let h = 6; h <= 21; h++){
       if (!blockedSlots.has(`${dateStr}-${h}-0`)) return false;
@@ -834,7 +867,6 @@
     return true;
   }
 
-  // 他時間 全枠判定（21:30〜5:30）
   function isOtherTimeFullyBlocked(dateStr){
     if (!blockedSlots.has(`${dateStr}-21-30`)) return false;
     for (let h = 22; h < 24; h++){
@@ -875,7 +907,6 @@
     return dates;
   }
 
-  // 時間帯定義（指定反映）
   function buildSlots(){
     const regularSlots = [];
     for (let h=6; h<=21; h++){
@@ -1104,7 +1135,6 @@
     }
   }
 
-  // -------- Booking Form --------
   function openBookingForm(date, hour, minute=0){
     selectedSlot = { date, hour, minute };
     document.getElementById('selectedSlotInfo').textContent =
@@ -1310,7 +1340,6 @@
     }
   }
 
-  // -------- Admin / Detail --------
   function openReservationDetail(reservation){
     selectedReservation = reservation;
     const content = document.getElementById('detailContent');
@@ -1560,7 +1589,6 @@
     };
   }
 
-  // ✅ 管理者入口画像：dataURLを優先（URL解析ではなく fileId 固定で確実）
   async function loadAdminIconWithFallback(){
     const img = document.getElementById('adminLoginImg');
     if (!img) return;
@@ -1568,14 +1596,11 @@
     try{
       const res = await gsRun('api_getDriveImageDataUrl', ADMIN_ICON_FILE_ID);
       if (res && res.isOk && res.data && res.data.dataUrl){
-        img.src = res.data.dataUrl; // ✅ ここで確実に差し替え
+        img.src = res.data.dataUrl;
       }
-    }catch(_){
-      // フォールバック：HTMLのsrcのまま
-    }
+    }catch(_){}
   }
 
-  // ✅ 重要：どこかが失敗しても「カレンダーだけは出す」初期化
   async function init(){
     try{
       await withLoading(async ()=>{
@@ -1587,7 +1612,6 @@
 
         try{ await loadAdminIconWithFallback(); }catch(e){}
 
-        // ここは必ず描画
         try{ renderCalendar(false); }catch(e){
           toast('カレンダー描画エラー: ' + (e?.message || e));
         }
@@ -1599,7 +1623,6 @@
     }
   }
 
-  // -------- UI events --------
   (function bindUI(){
     let tapCount = 0;
     let tapTimer = null;
