@@ -1039,7 +1039,7 @@
       html += `<div class="time-label sticky-left">${slot.display}</div>`;
       for (let idx=0; idx<dates.length; idx++){
         const date = dates[idx];
-        const blocked = isSlotBlockedWithMinute(date, slot.hour, slot.minute);
+        const blocked = isSlotBlockedWithMinute(date, hour, minute);
         const slotClass = isAdmin
           ? (blocked ? 'admin-slot-unavailable' : 'admin-slot-available')
           : (blocked ? 'slot-unavailable' : 'slot-available');
@@ -1820,4 +1820,5 @@
   </script>
 </body>
 </html>
+
 
