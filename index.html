@@ -1663,17 +1663,14 @@
     };
   }
 
-  async function loadAdminIconWithFallback(){
+　　  
+    async function loadAdminIconWithFallback(){
     const img = document.getElementById('adminLoginImg');
     if (!img) return;
-
-    try{
-      const res = await gsRun('api_getDriveImageDataUrl', ADMIN_ICON_FILE_ID);
-      if (res && res.isOk && res.data && res.data.dataUrl){
-        img.src = res.data.dataUrl;
-      }
-    }catch(_){}
-  }
+　
+　　 img.src = 'https://github.com/infochibafukushi-dotcom/chiba-care-taxi-assets/blob/main/logo.png?raw=true';
+}
+      
 
   async function init(){
     try{
@@ -1822,6 +1819,7 @@
   </script>
 </body>
 </html>
+
 
 
 
