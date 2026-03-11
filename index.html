@@ -848,7 +848,7 @@
       iframe.style.display = 'none';
 
       form.method = 'POST';
-      form.action = API_URL;
+      form.action = GAS_URL;
       form.target = frameName;
       form.style.display = 'none';
 
@@ -906,14 +906,14 @@
       let data;
 
       if (func === 'api_getConfig') {
-        data = await _jsonpCall(`${API_URL}?action=getConfig`);
+        data = await _jsonpCall(`${GAS_URL}?action=getConfig`);
       } else if (func === 'api_getInitData') {
-        data = await _jsonpCall(`${API_URL}?action=getInitData`);
+        data = await _jsonpCall(`${GAS_URL}?action=getInitData`);
       } else if (func === 'api_getMenuMaster') {
-        data = await _jsonpCall(`${API_URL}?action=getMenuMaster`);
+        data = await _jsonpCall(`${GAS_URL}?action=getMenuMaster`);
       } else if (func === 'api_getDriveImageDataUrl') {
         const fileId = args[0];
-        data = await _jsonpCall(`${API_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
+        data = await _jsonpCall(`${GAS_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
       } else if (func === 'api_createReservation') {
         data = await _postByForm('createReservation', args[0]);
       } else if (func === 'api_updateReservation') {
@@ -2434,6 +2434,7 @@
   </script>
 </body>
 </html>
+
 
 
 
