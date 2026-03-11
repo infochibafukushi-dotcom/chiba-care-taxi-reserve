@@ -219,6 +219,95 @@
     .hidden{
       display:none !important;
     }
+
+    .admin-panel-card{
+      border-radius:20px;
+      background:rgba(255,255,255,.95);
+      box-shadow:0 8px 32px rgba(0,0,0,.08);
+      border:1px solid rgba(255,255,255,.5);
+      padding:16px;
+      margin-bottom:16px;
+    }
+
+    .admin-panel-title{
+      font-size:18px;
+      font-weight:800;
+      color:#1f2937;
+      margin-bottom:14px;
+    }
+
+    .menu-admin-row{
+      display:grid;
+      grid-template-columns: 160px 1fr 120px 1fr 110px 110px;
+      gap:10px;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    .menu-admin-row:last-child{
+      border-bottom:none;
+    }
+
+    .menu-admin-head{
+      font-size:12px;
+      font-weight:800;
+      color:#6b7280;
+      text-transform:none;
+      padding-bottom:8px;
+      border-bottom:2px solid #e5e7eb;
+      margin-bottom:8px;
+    }
+
+    .logo-preview-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border:2px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+    }
+
+    .logo-preview-img{
+      width:64px;
+      height:64px;
+      object-fit:contain;
+      border-radius:14px;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      flex-shrink:0;
+    }
+
+    .config-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:14px;
+    }
+
+    .config-grid-1{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+
+    .field-note{
+      font-size:12px;
+      color:#6b7280;
+      line-height:1.5;
+      margin-top:6px;
+      font-weight:700;
+    }
+
+    @media (max-width: 900px){
+      .menu-admin-row{
+        grid-template-columns: 1fr;
+        gap:8px;
+      }
+      .config-grid{
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -245,7 +334,7 @@
           </button>
           <div>
             <h1 id="mainTitle" class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">介護タクシー予約</h1>
-            <p class="text-sm text-gray-500 mt-1">丁寧・安全な送迎をご提供します</p>
+            <p id="mainSubTitle" class="text-sm text-gray-500 mt-1">丁寧・安全な送迎をご提供します</p>
           </div>
         </div>
       </header>
@@ -353,58 +442,29 @@
             <div class="space-y-5">
               <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
                 <label class="form-label"> 介助内容 <span class="required">*</span> </label>
-                <select id="assistanceType" class="w-full">
-                  <option value="">選択してください</option>
-                  <option value="乗降介助">乗降介助(1,400円)</option>
-                  <option value="身体介助">身体介助(3,000円)</option>
-                </select>
-                <p class="text-xs text-gray-700 mt-3 leading-relaxed">
-                  <strong>乗降介助:</strong>玄関から車両への車いす等固定まで<br>
-                  <strong>身体介助:</strong>お部屋から車両への車いす等固定まで
-                </p>
+                <select id="assistanceType" class="w-full"></select>
+                <p id="assistanceNote" class="text-xs text-gray-700 mt-3 leading-relaxed"></p>
               </div>
 
               <div class="bg-orange-50 border-2 border-orange-200 rounded-xl p-4">
                 <label class="form-label"> 階段介助 <span class="required">*</span> </label>
-                <select id="stairAssistance" class="w-full">
-                  <option value="不要">不要(0円)</option>
-                  <option value="見守り介助">見守り介助(0円)</option>
-                  <option value="2階移動">2階移動(6,000円)</option>
-                  <option value="3階移動">3階移動(9,000円)</option>
-                  <option value="4階移動">4階移動(12,000円)</option>
-                  <option value="5階移動">5階移動(15,000円)</option>
-                </select>
-                <p class="text-xs text-gray-700 mt-3 leading-relaxed">
-                  <strong>見守り介助:</strong>自力歩行可能で手を握る介助<br>
-                  <strong>階段移動:</strong>背負い移動または2名による介助
-                </p>
+                <select id="stairAssistance" class="w-full"></select>
+                <p id="stairNote" class="text-xs text-gray-700 mt-3 leading-relaxed"></p>
                 <p id="stairWarning" class="warning-text mt-3 hidden">警告: 階段介助ご利用の場合、身体介助がセットになります</p>
               </div>
 
               <div class="bg-cyan-50 border-2 border-cyan-200 rounded-xl p-4">
                 <label class="form-label"> 機材レンタル <span class="required">*</span> </label>
-                <select id="equipmentRental" class="w-full">
-                  <option value="">選択してください</option>
-                  <option value="車いすレンタル">車いすレンタル(0円)</option>
-                  <option value="リクライニング車いすレンタル">リクライニング車いすレンタル(2,500円)</option>
-                  <option value="ストレッチャーレンタル">ストレッチャーレンタル(5,000円)</option>
-                  <option value="ご自身車いす">ご自身車いす(0円)</option>
-                </select>
+                <select id="equipmentRental" class="w-full"></select>
+                <p id="equipmentNote" class="text-xs text-gray-700 mt-3 leading-relaxed"></p>
                 <p id="wheelchairWarning" class="warning-text mt-3 hidden">警告: 車いす固定による傷、すり傷などは保証対象外になります</p>
                 <p id="stretcherWarning" class="warning-text mt-3 hidden">警告: ストレッチャー利用時に2名体制介助料5,000円と身体介助が必須となります</p>
               </div>
 
               <div class="bg-pink-50 border-2 border-pink-200 rounded-xl p-4">
                 <label class="form-label"> 往復送迎 <span class="required">*</span> </label>
-                <select id="roundTrip" class="w-full">
-                  <option value="不要">不要(0円)</option>
-                  <option value="待機">待機(800円から/30分毎)</option>
-                  <option value="病院付き添い">病院付き添い(1,600円から/30分毎)</option>
-                </select>
-                <p class="text-xs text-gray-700 mt-3 leading-relaxed">
-                  <strong>待機:</strong>病院駐車場等で待機<br>
-                  <strong>付き添い:</strong>病院内での移動や会計などをサポート
-                </p>
+                <select id="roundTrip" class="w-full"></select>
+                <p id="roundTripNote" class="text-xs text-gray-700 mt-3 leading-relaxed"></p>
               </div>
             </div>
           </div>
@@ -443,7 +503,7 @@
         <div class="text-left bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-pink-200 rounded-xl p-5 mb-6">
           <p class="text-sm text-gray-700 leading-relaxed font-medium">
             内容確認のため、以下の番号<br>
-            <strong class="text-lg text-pink-600">[090-6331-4289]</strong><br>
+            <strong id="notifyPhoneText" class="text-lg text-pink-600">[090-6331-4289]</strong><br>
             よりお電話をさせていただきます。<br><br>
             確認が取れたら、正式な予約完了と致します。<br><br>
             <span class="text-red-600 font-bold">お電話がつながらない場合、申し訳ございませんが自動キャンセルとさせていただく場合がございます。</span>
@@ -494,6 +554,126 @@
           <div class="stat-box"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">未対応</div></div>
           <div class="stat-box"><div class="stat-number" id="confirmedCount">0</div><div class="stat-label">確認済</div></div>
           <div class="stat-box"><div class="stat-number" id="completedCount">0</div><div class="stat-label">完了</div></div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-title">ロゴ・表示設定</div>
+
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">ロゴ文字</label>
+              <input type="text" id="cfgLogoText" placeholder="介護タクシー予約">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ロゴサブテキスト</label>
+              <input type="text" id="cfgLogoSubtext" placeholder="丁寧・安全な送迎をご提供します">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ画像URL</label>
+              <input type="text" id="cfgLogoImageUrl" placeholder="https://raw.githubusercontent.com/.../logo.png">
+              <div class="field-note">GitHub raw画像URLを入れる場合はこちら</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ロゴDrive fileId</label>
+              <input type="text" id="cfgLogoDriveFileId" placeholder="DriveのfileId">
+              <div class="field-note">Drive画像を使う場合はこちら</div>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">Drive画像を優先</label>
+              <select id="cfgLogoUseDriveImage">
+                <option value="0">OFF</option>
+                <option value="1">ON</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">完了画面の案内電話番号</label>
+              <input type="text" id="cfgPhoneNotifyText" placeholder="090-6331-4289">
+            </div>
+          </div>
+
+          <div class="config-grid-1 mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ画像プレビュー</label>
+              <div class="logo-preview-wrap">
+                <img id="adminLogoPreview" class="logo-preview-img" src="https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png" alt="logo preview">
+                <div>
+                  <div id="adminLogoPreviewText" class="font-extrabold text-gray-800 text-lg">介護タクシー予約</div>
+                  <div id="adminLogoPreviewSubtext" class="text-sm text-gray-500 font-bold mt-1">丁寧・安全な送迎をご提供します</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="saveLogoConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700" type="button">
+              ロゴ設定を保存
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-title">当日予約設定</div>
+
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">当日予約</label>
+              <select id="cfgSameDayEnabled">
+                <option value="0">表示しない</option>
+                <option value="1">表示する</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">当日予約の最短時間</label>
+              <select id="cfgSameDayMinHours">
+                <option value="1">1時間後</option>
+                <option value="2">2時間後</option>
+                <option value="3">3時間後</option>
+                <option value="4">4時間後</option>
+                <option value="5">5時間後</option>
+                <option value="6">6時間後</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-note mt-3">
+            当日予約を表示する場合、現在時刻＋設定時間より前の枠は自動でX表示になります。
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="saveSameDayConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700" type="button">
+              当日予約設定を保存
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-title">メニュー・料金管理</div>
+
+          <div class="menu-admin-head menu-admin-row">
+            <div>キー</div>
+            <div>表示名</div>
+            <div>金額</div>
+            <div>説明</div>
+            <div>表示</div>
+            <div>並び順</div>
+          </div>
+
+          <div id="menuAdminList"></div>
+
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
+              行追加
+            </button>
+            <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
+              メニューを保存
+            </button>
+          </div>
         </div>
 
         <div class="card-soft card-zero mb-5">
@@ -578,7 +758,7 @@
 
   <script>
   const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-  const API_URL = "https://script.google.com/macros/s/AKfycbwQ8SMtDnN3e0vYutzR4w2JR0WZpjS8ddmjzDFdXYWSbJoy5WsiDTKZM1HTGAtkLN4Vxg/exec";
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzXhFdhn2ddhe1HrV69gvpLy7G8_khYbAK60PvSJT73lOVTQxIYU9XkC0Wh5XcuCV8MWA/exec';
 
   function toast(msg='通信エラー', ms=2200){
     const el = document.getElementById('toast');
@@ -722,15 +902,6 @@
   }
 
   const gsRun = async (func, ...args) => {
-    const isIgnorableAuthError = (m) => {
-      const s = String(m || '');
-      return (
-        s.includes('UrlFetchApp.fetch') ||
-        s.includes('script.external_request') ||
-        (s.includes('必要な権限') && s.includes('external_request'))
-      );
-    };
-
     try{
       let data;
 
@@ -738,6 +909,8 @@
         data = await _jsonpCall(`${API_URL}?action=getConfig`);
       } else if (func === 'api_getInitData') {
         data = await _jsonpCall(`${API_URL}?action=getInitData`);
+      } else if (func === 'api_getMenuMaster') {
+        data = await _jsonpCall(`${API_URL}?action=getMenuMaster`);
       } else if (func === 'api_getDriveImageDataUrl') {
         const fileId = args[0];
         data = await _jsonpCall(`${API_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
@@ -761,20 +934,24 @@
           dateStr: args[0],
           isBlocked: args[1]
         });
+      } else if (func === 'api_saveConfig') {
+        data = await _postByForm('saveConfig', args[0]);
+      } else if (func === 'api_saveMenuMaster') {
+        data = await _postByForm('saveMenuMaster', args[0]);
       } else {
         throw new Error(`未対応のAPIです: ${func}`);
       }
 
       if (data && data.isOk === false) {
         const msg = data.error || data.message || '通信エラー（isOk=false）';
-        if (!isIgnorableAuthError(msg)) toast(msg);
+        toast(msg);
         throw new Error(msg);
       }
 
       return data;
     }catch(e){
       const msg = e?.message || '通信エラー';
-      if (!isIgnorableAuthError(msg)) toast(msg);
+      toast(msg);
       throw e;
     }
   };
@@ -826,34 +1003,71 @@
   let selectedReservation = null;
   let config = {};
   let isExtendedView = false;
+  let menuMaster = [];
 
   let calendarDates = [];
   let adminCalendarDates = [];
 
-  const START_OFFSET_DAYS = 1;
-  const DAYS_TO_RENDER = 30;
-  const TIME_COL_W_DESKTOP = 60;
-  const TIME_COL_W_MOBILE = 44;
-  const DAY_MIN_W_MOBILE = 62;
-
-  const defaultConfig = { main_title: '介護タクシー予約' };
-
-  const PRICES = {
-    BASE_FARE: 730,
-    DISPATCH: 800,
-    SPECIAL_VEHICLE: 1000,
-    BOARDING_ASSIST: 1400,
-    BODY_ASSIST: 3000,
-    STAIR_2F: 6000,
-    STAIR_3F: 9000,
-    STAIR_4F: 12000,
-    STAIR_5F: 15000,
-    RECLINING_WHEELCHAIR: 2500,
-    STRETCHER: 5000,
-    STRETCHER_TWO_STAFF: 5000,
-    STANDBY: 800,
-    HOSPITAL_ESCORT: 1600
+  const defaultConfig = {
+    main_title: '介護タクシー予約',
+    logo_subtext: '丁寧・安全な送迎をご提供します',
+    logo_image_url: '',
+    logo_drive_file_id: '',
+    logo_use_drive_image: '0',
+    phone_notify_text: '090-6331-4289',
+    same_day_enabled: '0',
+    same_day_min_hours: '3',
+    admin_password: '95123',
+    admin_tap_count: '5',
+    max_forward_days: '30'
   };
+
+  function getMenuMap(){
+    const map = {};
+    (menuMaster || []).forEach(item => {
+      map[item.key] = item;
+    });
+    return map;
+  }
+
+  function isMenuVisible(key){
+    const map = getMenuMap();
+    if (!map[key]) return false;
+    return !(map[key].is_visible === false || String(map[key].is_visible).toUpperCase() === 'FALSE');
+  }
+
+  function getMenuPrice(key, fallback){
+    const map = getMenuMap();
+    if (map[key] && map[key].price !== undefined && map[key].price !== null && map[key].price !== '') {
+      return Number(map[key].price || 0);
+    }
+    return Number(fallback || 0);
+  }
+
+  function getMenuLabel(key, fallback){
+    const map = getMenuMap();
+    if (map[key] && map[key].label) return String(map[key].label);
+    return fallback;
+  }
+
+  function getMenuNote(key, fallback){
+    const map = getMenuMap();
+    if (map[key] && map[key].note) return String(map[key].note);
+    return fallback || '';
+  }
+
+  function getItemsByGroup(group){
+    return (menuMaster || []).filter(item => {
+      if (String(item.menu_group || '') !== String(group || '')) return false;
+      if (item.is_visible === false || String(item.is_visible).toUpperCase() === 'FALSE') return false;
+      return true;
+    }).sort((a,b) => {
+      const aOrder = Number(a.sort_order || 9999);
+      const bOrder = Number(b.sort_order || 9999);
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return String(a.key).localeCompare(String(b.key));
+    });
+  }
 
   function formatDate(date) {
     const month = date.getMonth() + 1;
@@ -933,35 +1147,69 @@
 
   function isSlotBlockedWithMinute(dateObj, hour, minute) {
     const key = `${ymdLocal(dateObj)}-${hour}-${minute}`;
-    return blockedSlots.has(key) || reservedSlots.has(key);
+    if (blockedSlots.has(key) || reservedSlots.has(key)) return true;
+
+    const dateStr = ymdLocal(dateObj);
+    if (String(config.same_day_enabled || '0') === '1') {
+      const todayStr = ymdLocal(new Date());
+      if (dateStr === todayStr) {
+        const minHours = Number(config.same_day_min_hours || 3);
+        const threshold = new Date(Date.now() + minHours * 60 * 60 * 1000);
+        const rounded = ceilToNext30Min(threshold);
+        const slotDt = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), Number(hour), Number(minute || 0), 0, 0);
+        if (slotDt.getTime() < rounded.getTime()) return true;
+      }
+    }
+
+    return false;
+  }
+
+  function ceilToNext30Min(dt){
+    const d = new Date(dt.getTime());
+    d.setSeconds(0,0);
+    const minute = d.getMinutes();
+    if (minute === 0 || minute === 30) return d;
+    if (minute < 30) {
+      d.setMinutes(30, 0, 0);
+      return d;
+    }
+    d.setHours(d.getHours() + 1);
+    d.setMinutes(0, 0, 0);
+    return d;
   }
 
   function isRegularFullyBlocked(dateStr){
     for (let h = 6; h <= 21; h++){
-      if (!blockedSlots.has(`${dateStr}-${h}-0`)) return false;
+      if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 0)) return false;
       if (h < 21){
-        if (!blockedSlots.has(`${dateStr}-${h}-30`)) return false;
+        if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 30)) return false;
       }
     }
     return true;
   }
 
   function isOtherTimeFullyBlocked(dateStr){
-    if (!blockedSlots.has(`${dateStr}-21-30`)) return false;
+    if (!isSlotBlockedWithMinuteByDateStr(dateStr, 21, 30)) return false;
     for (let h = 22; h < 24; h++){
-      if (!blockedSlots.has(`${dateStr}-${h}-0`)) return false;
-      if (!blockedSlots.has(`${dateStr}-${h}-30`)) return false;
+      if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 0)) return false;
+      if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 30)) return false;
     }
     for (let h = 0; h <= 5; h++){
-      if (!blockedSlots.has(`${dateStr}-${h}-0`)) return false;
-      if (!blockedSlots.has(`${dateStr}-${h}-30`)) return false;
+      if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 0)) return false;
+      if (!isSlotBlockedWithMinuteByDateStr(dateStr, h, 30)) return false;
     }
     return true;
   }
 
+  function isSlotBlockedWithMinuteByDateStr(dateStr, hour, minute){
+    const [y,m,d] = String(dateStr).split('-').map(Number);
+    const date = new Date(y, m-1, d, 0, 0, 0, 0);
+    return isSlotBlockedWithMinute(date, hour, minute);
+  }
+
   function applyCalendarGridColumns(gridEl, daysCount){
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const timeCol = isMobile ? TIME_COL_W_MOBILE : TIME_COL_W_DESKTOP;
+    const timeCol = isMobile ? 44 : 60;
     const sc = gridEl?.closest?.('.scroll-container') || gridEl?.parentElement;
     const baseW = (sc && sc.clientWidth) ? sc.clientWidth : window.innerWidth;
 
@@ -969,7 +1217,7 @@
       const dayW = Math.max(110, Math.floor((baseW - timeCol) / 7));
       gridEl.style.gridTemplateColumns = `${timeCol}px repeat(${daysCount}, ${dayW}px)`;
     } else {
-      gridEl.style.gridTemplateColumns = `${timeCol}px repeat(${daysCount}, minmax(${DAY_MIN_W_MOBILE}px, 1fr))`;
+      gridEl.style.gridTemplateColumns = `${timeCol}px repeat(${daysCount}, minmax(62px, 1fr))`;
     }
   }
 
@@ -977,10 +1225,13 @@
     const today = new Date();
     today.setHours(0,0,0,0);
 
+    const maxForwardDays = Number(config.max_forward_days || 30);
+    const startOffset = String(config.same_day_enabled || '0') === '1' ? 0 : 1;
     const dates = [];
-    for (let i=0;i<DAYS_TO_RENDER;i++){
+
+    for (let i=0;i<maxForwardDays;i++){
       const dt = new Date(today);
-      dt.setDate(today.getDate() + START_OFFSET_DAYS + i);
+      dt.setDate(today.getDate() + startOffset + i);
       dates.push(dt);
     }
     return dates;
@@ -1016,6 +1267,12 @@
       adminCalendarDates = dates;
     } else {
       calendarDates = dates;
+    }
+
+    if (dates.length === 0) {
+      dateRangeEl.textContent = '';
+      grid.innerHTML = '';
+      return;
     }
 
     dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length-1])}`;
@@ -1219,6 +1476,83 @@
     }
   }
 
+  function buildSelectOptions(selectEl, items, includePlaceholder, placeholderText, formatter){
+    if (!selectEl) return;
+    let html = '';
+    if (includePlaceholder) {
+      html += `<option value="">${placeholderText}</option>`;
+    }
+    items.forEach(item => {
+      const label = typeof formatter === 'function' ? formatter(item) : item.label;
+      html += `<option value="${escapeHtml(String(item.label))}">${escapeHtml(String(label))}</option>`;
+    });
+    selectEl.innerHTML = html;
+  }
+
+  function renderServiceSelectors(){
+    const assistanceItems = getItemsByGroup('assistance');
+    const stairItems = getItemsByGroup('stair');
+    const equipmentItems = getItemsByGroup('equipment');
+    const roundTripItems = getItemsByGroup('round_trip');
+
+    buildSelectOptions(
+      document.getElementById('assistanceType'),
+      assistanceItems,
+      true,
+      '選択してください',
+      function(item){ return `${item.label}(${Number(item.price || 0).toLocaleString()}円)`; }
+    );
+
+    buildSelectOptions(
+      document.getElementById('stairAssistance'),
+      stairItems,
+      false,
+      '',
+      function(item){ return `${item.label}(${Number(item.price || 0).toLocaleString()}円)`; }
+    );
+
+    buildSelectOptions(
+      document.getElementById('equipmentRental'),
+      equipmentItems,
+      true,
+      '選択してください',
+      function(item){ return `${item.label}(${Number(item.price || 0).toLocaleString()}円)`; }
+    );
+
+    buildSelectOptions(
+      document.getElementById('roundTrip'),
+      roundTripItems,
+      false,
+      '',
+      function(item){
+        const note = item.note ? item.note : '';
+        if (note && note.includes('30分毎')) {
+          return `${item.label}(${Number(item.price || 0).toLocaleString()}円から/30分毎)`;
+        }
+        return `${item.label}(${Number(item.price || 0).toLocaleString()}円)`;
+      }
+    );
+
+    const assistanceNote = [
+      `<strong>${escapeHtml(getMenuLabel('BOARDING_ASSIST', '乗降介助'))}:</strong>${escapeHtml(getMenuNote('BOARDING_ASSIST', '玄関から車両への車いす等固定まで'))}`,
+      `<strong>${escapeHtml(getMenuLabel('BODY_ASSIST', '身体介助'))}:</strong>${escapeHtml(getMenuNote('BODY_ASSIST', 'お部屋から車両への車いす等固定まで'))}`
+    ].join('<br>');
+    document.getElementById('assistanceNote').innerHTML = assistanceNote;
+
+    const stairNote = [
+      `<strong>${escapeHtml(getMenuLabel('STAIR_WATCH', '見守り介助'))}:</strong>${escapeHtml(getMenuNote('STAIR_WATCH', '自力歩行可能で手を握る介助'))}`,
+      `<strong>階段移動:</strong>背負い移動または2名による介助`
+    ].join('<br>');
+    document.getElementById('stairNote').innerHTML = stairNote;
+
+    document.getElementById('equipmentNote').innerHTML = '';
+    const roundTripNote = [
+      `<strong>${escapeHtml(getMenuLabel('ROUND_STANDBY', '待機'))}:</strong>病院駐車場等で待機`,
+      `<strong>${escapeHtml(getMenuLabel('ROUND_HOSPITAL', '病院付き添い'))}:</strong>病院内での移動や会計などをサポート`
+    ].join('<br>');
+    document.getElementById('roundTripNote').innerHTML = roundTripNote;
+  }
+
   function openBookingForm(date, hour, minute=0){
     selectedSlot = { date, hour, minute };
     document.getElementById('selectedSlotInfo').textContent =
@@ -1234,6 +1568,11 @@
     document.getElementById('wheelchairWarning').classList.add('hidden');
     document.getElementById('stretcherWarning').classList.add('hidden');
     updateSubmitButton();
+
+    const stairDefault = getItemsByGroup('stair')[0];
+    const roundDefault = getItemsByGroup('round_trip')[0];
+    if (stairDefault) document.getElementById('stairAssistance').value = stairDefault.label;
+    if (roundDefault) document.getElementById('roundTrip').value = roundDefault.label;
   }
 
   function calculatePrice(){
@@ -1256,79 +1595,95 @@
     stretcherWarning.classList.add('hidden');
     wheelchairWarning.classList.add('hidden');
 
-    total += PRICES.BASE_FARE + PRICES.DISPATCH + PRICES.SPECIAL_VEHICLE;
-    breakdown.push({ name:'運賃', price:PRICES.BASE_FARE, suffix:' から' });
-    breakdown.push({ name:'配車予約', price:PRICES.DISPATCH });
-    breakdown.push({ name:'特殊車両使用料', price:PRICES.SPECIAL_VEHICLE });
+    const baseFare = getMenuPrice('BASE_FARE', 730);
+    const dispatch = getMenuPrice('DISPATCH', 800);
+    const specialVehicle = getMenuPrice('SPECIAL_VEHICLE', 1000);
+    const boardingAssistPrice = getMenuPrice('BOARDING_ASSIST', 1400);
+    const bodyAssistPrice = getMenuPrice('BODY_ASSIST', 3000);
+    const stair2Price = getMenuPrice('STAIR_2F', 6000);
+    const stair3Price = getMenuPrice('STAIR_3F', 9000);
+    const stair4Price = getMenuPrice('STAIR_4F', 12000);
+    const stair5Price = getMenuPrice('STAIR_5F', 15000);
+    const recliningPrice = getMenuPrice('EQUIP_RECLINING', 2500);
+    const stretcherPrice = getMenuPrice('EQUIP_STRETCHER', 5000);
+    const stretcherStaffPrice = getMenuPrice('EQUIP_STRETCHER_STAFF2', 5000);
+    const standbyPrice = getMenuPrice('ROUND_STANDBY', 800);
+    const hospitalEscortPrice = getMenuPrice('ROUND_HOSPITAL', 1600);
 
-    if (stairAssistance && stairAssistance !== '不要'){
-      stairWarning.classList.remove('hidden');
-      mustUseBodyAssist = true;
+    total += baseFare + dispatch + specialVehicle;
+    breakdown.push({ name:getMenuLabel('BASE_FARE', '運賃'), price:baseFare, suffix:' から' });
+    breakdown.push({ name:getMenuLabel('DISPATCH', '配車予約'), price:dispatch });
+    breakdown.push({ name:getMenuLabel('SPECIAL_VEHICLE', '特殊車両使用料'), price:specialVehicle });
+
+    if (stairAssistance && stairAssistance !== getMenuLabel('STAIR_NONE', '不要')){
+      if (stairAssistance !== getMenuLabel('STAIR_WATCH', '見守り介助')){
+        stairWarning.classList.remove('hidden');
+        mustUseBodyAssist = true;
+      }
     }
 
-    if (equipmentRental === 'ストレッチャーレンタル'){
+    if (equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル')){
       stretcherWarning.classList.remove('hidden');
       mustUseBodyAssist = true;
     }
 
-    if (equipmentRental === 'ご自身車いす'){
+    if (equipmentRental === getMenuLabel('EQUIP_OWN_WHEELCHAIR', 'ご自身車いす')){
       wheelchairWarning.classList.remove('hidden');
     }
 
     if (mustUseBodyAssist){
-      assistanceSelect.value = '身体介助';
-      total += PRICES.BODY_ASSIST;
-      breakdown.push({ name:'身体介助', price:PRICES.BODY_ASSIST });
+      assistanceSelect.value = getMenuLabel('BODY_ASSIST', '身体介助');
+      total += bodyAssistPrice;
+      breakdown.push({ name:getMenuLabel('BODY_ASSIST', '身体介助'), price:bodyAssistPrice });
     } else {
-      if (assistanceType === '乗降介助'){
-        total += PRICES.BOARDING_ASSIST;
-        breakdown.push({ name:'乗降介助', price:PRICES.BOARDING_ASSIST });
-      } else if (assistanceType === '身体介助'){
-        total += PRICES.BODY_ASSIST;
-        breakdown.push({ name:'身体介助', price:PRICES.BODY_ASSIST });
+      if (assistanceType === getMenuLabel('BOARDING_ASSIST', '乗降介助')){
+        total += boardingAssistPrice;
+        breakdown.push({ name:getMenuLabel('BOARDING_ASSIST', '乗降介助'), price:boardingAssistPrice });
+      } else if (assistanceType === getMenuLabel('BODY_ASSIST', '身体介助')){
+        total += bodyAssistPrice;
+        breakdown.push({ name:getMenuLabel('BODY_ASSIST', '身体介助'), price:bodyAssistPrice });
       }
     }
 
-    const stairPrices = {
-      '2階移動': PRICES.STAIR_2F,
-      '3階移動': PRICES.STAIR_3F,
-      '4階移動': PRICES.STAIR_4F,
-      '5階移動': PRICES.STAIR_5F
-    };
+    const stairPrices = {};
+    stairPrices[getMenuLabel('STAIR_2F', '2階移動')] = stair2Price;
+    stairPrices[getMenuLabel('STAIR_3F', '3階移動')] = stair3Price;
+    stairPrices[getMenuLabel('STAIR_4F', '4階移動')] = stair4Price;
+    stairPrices[getMenuLabel('STAIR_5F', '5階移動')] = stair5Price;
 
-    if (stairPrices[stairAssistance]){
+    if (stairPrices[stairAssistance] !== undefined){
       total += stairPrices[stairAssistance];
       breakdown.push({ name:`階段介助(${stairAssistance})`, price:stairPrices[stairAssistance] });
-    } else if (stairAssistance === '見守り介助'){
-      breakdown.push({ name:'見守り介助', price:0 });
+    } else if (stairAssistance === getMenuLabel('STAIR_WATCH', '見守り介助')){
+      breakdown.push({ name:getMenuLabel('STAIR_WATCH', '見守り介助'), price:0 });
     }
 
-    if (equipmentRental === 'リクライニング車いすレンタル'){
-      total += PRICES.RECLINING_WHEELCHAIR;
-      breakdown.push({ name:'リクライニング車いすレンタル', price:PRICES.RECLINING_WHEELCHAIR });
-    } else if (equipmentRental === 'ストレッチャーレンタル'){
-      total += PRICES.STRETCHER + PRICES.STRETCHER_TWO_STAFF;
-      breakdown.push({ name:'ストレッチャーレンタル', price:PRICES.STRETCHER });
-      breakdown.push({ name:'ストレッチャー2名体制介助料', price:PRICES.STRETCHER_TWO_STAFF });
-    } else if (equipmentRental === '車いすレンタル'){
-      breakdown.push({ name:'車いすレンタル', price:0 });
-    } else if (equipmentRental === 'ご自身車いす'){
-      breakdown.push({ name:'ご自身車いす', price:0 });
+    if (equipmentRental === getMenuLabel('EQUIP_RECLINING', 'リクライニング車いすレンタル')){
+      total += recliningPrice;
+      breakdown.push({ name:getMenuLabel('EQUIP_RECLINING', 'リクライニング車いすレンタル'), price:recliningPrice });
+    } else if (equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル')){
+      total += stretcherPrice + stretcherStaffPrice;
+      breakdown.push({ name:getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル'), price:stretcherPrice });
+      breakdown.push({ name:getMenuLabel('EQUIP_STRETCHER_STAFF2', 'ストレッチャー2名体制介助料'), price:stretcherStaffPrice });
+    } else if (equipmentRental === getMenuLabel('EQUIP_WHEELCHAIR', '車いすレンタル')){
+      breakdown.push({ name:getMenuLabel('EQUIP_WHEELCHAIR', '車いすレンタル'), price:0 });
+    } else if (equipmentRental === getMenuLabel('EQUIP_OWN_WHEELCHAIR', 'ご自身車いす')){
+      breakdown.push({ name:getMenuLabel('EQUIP_OWN_WHEELCHAIR', 'ご自身車いす'), price:0 });
     }
 
-    if (roundTrip === '待機'){
-      total += PRICES.STANDBY;
-      breakdown.push({ name:'待機', price:PRICES.STANDBY, suffix:' から/30分毎' });
-    } else if (roundTrip === '病院付き添い'){
-      total += PRICES.HOSPITAL_ESCORT;
-      breakdown.push({ name:'病院付き添い', price:PRICES.HOSPITAL_ESCORT, suffix:' から/30分毎' });
+    if (roundTrip === getMenuLabel('ROUND_STANDBY', '待機')){
+      total += standbyPrice;
+      breakdown.push({ name:getMenuLabel('ROUND_STANDBY', '待機'), price:standbyPrice, suffix:' から/30分毎' });
+    } else if (roundTrip === getMenuLabel('ROUND_HOSPITAL', '病院付き添い')){
+      total += hospitalEscortPrice;
+      breakdown.push({ name:getMenuLabel('ROUND_HOSPITAL', '病院付き添い'), price:hospitalEscortPrice, suffix:' から/30分毎' });
     }
 
     const breakdownEl = document.getElementById('priceBreakdown');
     breakdownEl.innerHTML = breakdown.map(item => `
       <div class="price-item">
-        <span class="price-label">${item.name}</span>
-        <span class="price-value">${Number(item.price).toLocaleString()}円${item.suffix || ''}</span>
+        <span class="price-label">${escapeHtml(item.name)}</span>
+        <span class="price-value">${Number(item.price).toLocaleString()}円${escapeHtml(item.suffix || '')}</span>
       </div>
     `).join('');
 
@@ -1363,7 +1718,7 @@
 
   async function waitAndRefresh_(waitMs){
     await sleep(waitMs || 700);
-    await refreshData(true);
+    await refreshAllData(true);
   }
 
   async function submitBooking(e){
@@ -1377,7 +1732,7 @@
     const total = calculatePrice();
 
     const equipmentRental = document.getElementById('equipmentRental').value;
-    const stretcher2Staff = equipmentRental === 'ストレッチャーレンタル' ? 'あり' : 'なし';
+    const stretcher2Staff = equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル') ? 'あり' : 'なし';
     const slotDateStr = ymdLocal(selectedSlot.date);
 
     const reservation = {
@@ -1444,64 +1799,64 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-sky-50 p-4 rounded-lg border-2 border-sky-200">
             <p class="text-xs text-gray-500 font-bold mb-1">予約ID</p>
-            <p class="font-bold text-gray-800">${reservation.reservation_id}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.reservation_id || '')}</p>
           </div>
           <div class="bg-sky-50 p-4 rounded-lg border-2 border-sky-200">
             <p class="text-xs text-gray-500 font-bold mb-1">予約日時</p>
-            <p class="font-bold text-gray-800">${reservation.reservation_datetime}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.reservation_datetime || '')}</p>
           </div>
         </div>
         <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
           <p class="text-xs text-gray-500 font-bold mb-1">ご利用区分</p>
-          <p class="font-bold text-gray-800">${reservation.usage_type}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.usage_type || '')}</p>
         </div>
         <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
           <p class="text-xs text-gray-500 font-bold mb-1">お名前</p>
-          <p class="font-bold text-gray-800 text-lg">${reservation.customer_name}</p>
+          <p class="font-bold text-gray-800 text-lg">${escapeHtml(reservation.customer_name || '')}</p>
         </div>
         <div class="bg-pink-50 p-4 rounded-lg border-2 border-pink-200">
           <p class="text-xs text-gray-500 font-bold mb-1">連絡先</p>
-          <p class="font-bold text-gray-800">${reservation.phone_number}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.phone_number || '')}</p>
         </div>
         <div class="bg-emerald-50 p-4 rounded-lg border-2 border-emerald-200">
           <p class="text-xs text-gray-500 font-bold mb-1">お伺い先</p>
-          <p class="font-bold text-gray-800">${reservation.pickup_location}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.pickup_location || '')}</p>
         </div>
         <div class="bg-teal-50 p-4 rounded-lg border-2 border-teal-200">
           <p class="text-xs text-gray-500 font-bold mb-1">送迎先</p>
-          <p class="font-bold text-gray-800">${reservation.destination || '-'}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.destination || '-')}</p>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
             <p class="text-xs text-gray-500 font-bold mb-1">介助内容</p>
-            <p class="font-bold text-gray-800">${reservation.assistance_type}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.assistance_type || '')}</p>
           </div>
           <div class="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
             <p class="text-xs text-gray-500 font-bold mb-1">階段介助</p>
-            <p class="font-bold text-gray-800">${reservation.stair_assistance}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.stair_assistance || '')}</p>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-cyan-50 p-4 rounded-lg border-2 border-cyan-200">
             <p class="text-xs text-gray-500 font-bold mb-1">機材</p>
-            <p class="font-bold text-gray-800">${reservation.equipment_rental}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.equipment_rental || '')}</p>
           </div>
           <div class="bg-indigo-50 p-4 rounded-lg border-2 border-indigo-200">
             <p class="text-xs text-gray-500 font-bold mb-1">2名体制</p>
-            <p class="font-bold text-gray-800">${reservation.stretcher_two_staff}</p>
+            <p class="font-bold text-gray-800">${escapeHtml(reservation.stretcher_two_staff || '')}</p>
           </div>
         </div>
         <div class="bg-lime-50 p-4 rounded-lg border-2 border-lime-200">
           <p class="text-xs text-gray-500 font-bold mb-1">往復送迎</p>
-          <p class="font-bold text-gray-800">${reservation.round_trip}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.round_trip || '')}</p>
         </div>
         <div class="bg-rose-50 p-4 rounded-lg border-2 border-rose-200">
           <p class="text-xs text-gray-500 font-bold mb-1">ご要望・備考</p>
-          <p class="font-bold text-gray-800">${reservation.notes || '-'}</p>
+          <p class="font-bold text-gray-800">${escapeHtml(reservation.notes || '-')}</p>
         </div>
         <div class="bg-gradient-to-r from-emerald-100 to-teal-100 p-4 rounded-lg border-2 border-emerald-300">
           <p class="text-xs text-gray-500 font-bold mb-2">概算合計</p>
-          <p class="font-bold text-emerald-600 text-2xl">${Number(reservation.total_price).toLocaleString()}円</p>
+          <p class="font-bold text-emerald-600 text-2xl">${Number(reservation.total_price || 0).toLocaleString()}円</p>
         </div>
       </div>
     `;
@@ -1609,22 +1964,22 @@
 
     const sorted = [...visible].sort((a,b)=> new Date(b.reservation_datetime) - new Date(a.reservation_datetime));
     tbody.innerHTML = sorted.map(r=>`
-      <tr class="hover:bg-sky-50 sheet-row-clickable" data-reservation-id="${r.reservation_id}">
-        <td class="border border-sky-200 p-3 font-mono text-xs">${r.reservation_id}</td>
-        <td class="border border-sky-200 p-3">${r.reservation_datetime}</td>
-        <td class="border border-sky-200 p-3">${r.usage_type}</td>
-        <td class="border border-sky-200 p-3 font-bold">${r.customer_name}</td>
-        <td class="border border-sky-200 p-3">${r.phone_number}</td>
-        <td class="border border-sky-200 p-3">${r.pickup_location}</td>
-        <td class="border border-sky-200 p-3">${r.destination || '-'}</td>
-        <td class="border border-sky-200 p-3">${r.assistance_type}</td>
-        <td class="border border-sky-200 p-3">${r.stair_assistance}</td>
-        <td class="border border-sky-200 p-3">${r.equipment_rental}</td>
-        <td class="border border-sky-200 p-3">${r.stretcher_two_staff}</td>
-        <td class="border border-sky-200 p-3">${r.round_trip}</td>
-        <td class="border border-sky-200 p-3">${r.notes || '-'}</td>
+      <tr class="hover:bg-sky-50 sheet-row-clickable" data-reservation-id="${escapeHtml(String(r.reservation_id || ''))}">
+        <td class="border border-sky-200 p-3 font-mono text-xs">${escapeHtml(r.reservation_id || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.reservation_datetime || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.usage_type || '')}</td>
+        <td class="border border-sky-200 p-3 font-bold">${escapeHtml(r.customer_name || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.phone_number || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.pickup_location || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.destination || '-')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.assistance_type || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.stair_assistance || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.equipment_rental || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.stretcher_two_staff || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.round_trip || '')}</td>
+        <td class="border border-sky-200 p-3">${escapeHtml(r.notes || '-')}</td>
         <td class="border border-sky-200 p-3 font-bold text-emerald-600">${Number(r.total_price||0).toLocaleString()}円</td>
-        <td class="border border-sky-200 p-3"><span class="badge ${getBadgeClass(r.status)}">${r.status}</span></td>
+        <td class="border border-sky-200 p-3"><span class="badge ${getBadgeClass(r.status)}">${escapeHtml(r.status || '')}</span></td>
         <td class="border border-sky-200 p-3 text-center text-sky-700 font-bold">詳細</td>
       </tr>
     `).join('');
@@ -1654,9 +2009,8 @@
     try{
       const res = await gsRun('api_getConfig');
       if (res && res.isOk){
-        config = res.data || {};
-        const t = document.getElementById('mainTitle');
-        if (t) t.textContent = config.main_title || defaultConfig.main_title;
+        config = { ...defaultConfig, ...(res.data || {}) };
+        applyConfigToUI();
       }
     }catch(e){}
   }
@@ -1666,14 +2020,211 @@
       const res = await gsRun('api_getInitData');
       if (!res || !res.isOk) throw new Error('init failed');
 
-      reservations = res.data.reservations || [];
-      const blocks = res.data.blocks || [];
+      const data = res.data || {};
+      config = { ...defaultConfig, ...(data.config || config || {}) };
+      menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
+      reservations = data.reservations || [];
+      const blocks = data.blocks || [];
+
       rebuildBlockedSlotsFromSheet(blocks);
       rebuildReservedSlotsFromReservations(reservations);
+
+      applyConfigToUI();
+      renderServiceSelectors();
+      renderMenuAdminList();
     }catch(e){
       if (showToastOnFail) toast(e?.message || '通信エラー（データ取得）');
       throw e;
     }
+  }
+
+  async function refreshAllData(showToastOnFail=false){
+    await refreshData(showToastOnFail);
+  }
+
+  function applyConfigToUI(){
+    const titleEl = document.getElementById('mainTitle');
+    const subEl = document.getElementById('mainSubTitle');
+    const notifyEl = document.getElementById('notifyPhoneText');
+
+    if (titleEl) titleEl.textContent = config.logo_text || config.main_title || defaultConfig.main_title;
+    if (subEl) subEl.textContent = config.logo_subtext || defaultConfig.logo_subtext;
+    if (notifyEl) notifyEl.textContent = `[${config.phone_notify_text || defaultConfig.phone_notify_text}]`;
+
+    const toggleBtn = document.getElementById('toggleTimeView');
+    if (toggleBtn) {
+      const extendedEnabled = String(config.extended_enabled || '1') === '1';
+      toggleBtn.style.display = extendedEnabled ? '' : 'none';
+      if (!extendedEnabled) {
+        isExtendedView = false;
+      }
+    }
+
+    if (document.getElementById('cfgLogoText')) document.getElementById('cfgLogoText').value = config.logo_text || config.main_title || '';
+    if (document.getElementById('cfgLogoSubtext')) document.getElementById('cfgLogoSubtext').value = config.logo_subtext || '';
+    if (document.getElementById('cfgLogoImageUrl')) document.getElementById('cfgLogoImageUrl').value = config.logo_image_url || '';
+    if (document.getElementById('cfgLogoDriveFileId')) document.getElementById('cfgLogoDriveFileId').value = config.logo_drive_file_id || '';
+    if (document.getElementById('cfgLogoUseDriveImage')) document.getElementById('cfgLogoUseDriveImage').value = String(config.logo_use_drive_image || '0');
+    if (document.getElementById('cfgPhoneNotifyText')) document.getElementById('cfgPhoneNotifyText').value = config.phone_notify_text || '';
+    if (document.getElementById('cfgSameDayEnabled')) document.getElementById('cfgSameDayEnabled').value = String(config.same_day_enabled || '0');
+    if (document.getElementById('cfgSameDayMinHours')) document.getElementById('cfgSameDayMinHours').value = String(config.same_day_min_hours || '3');
+
+    updateLogoPreview();
+  }
+
+  async function updateLogoPreview(){
+    const previewImg = document.getElementById('adminLogoPreview');
+    const previewText = document.getElementById('adminLogoPreviewText');
+    const previewSubText = document.getElementById('adminLogoPreviewSubtext');
+    const mainImg = document.getElementById('adminLoginImg');
+
+    const logoText = config.logo_text || config.main_title || defaultConfig.main_title;
+    const logoSubText = config.logo_subtext || defaultConfig.logo_subtext;
+
+    if (previewText) previewText.textContent = logoText;
+    if (previewSubText) previewSubText.textContent = logoSubText;
+
+    let finalSrc = config.logo_image_url || 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+
+    const useDrive = String(config.logo_use_drive_image || '0') === '1';
+    const driveFileId = String(config.logo_drive_file_id || '').trim();
+
+    if (useDrive && driveFileId) {
+      try{
+        const res = await gsRun('api_getDriveImageDataUrl', driveFileId);
+        if (res && res.isOk && res.data && res.data.dataUrl) {
+          finalSrc = res.data.dataUrl;
+        }
+      }catch(_){}
+    }
+
+    if (previewImg) previewImg.src = finalSrc;
+    if (mainImg) mainImg.src = finalSrc;
+  }
+
+  function renderMenuAdminList(){
+    const wrap = document.getElementById('menuAdminList');
+    if (!wrap) return;
+
+    const items = [...(menuMaster || [])].sort((a,b) => {
+      const aOrder = Number(a.sort_order || 9999);
+      const bOrder = Number(b.sort_order || 9999);
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return String(a.key || '').localeCompare(String(b.key || ''));
+    });
+
+    wrap.innerHTML = items.map((item, idx) => `
+      <div class="menu-admin-row" data-menu-row="${idx}">
+        <input type="text" class="menu-key" value="${escapeAttr(item.key || '')}" placeholder="KEY">
+        <input type="text" class="menu-label" value="${escapeAttr(item.label || '')}" placeholder="表示名">
+        <input type="number" class="menu-price" value="${escapeAttr(String(Number(item.price || 0)))}" placeholder="金額">
+        <input type="text" class="menu-note" value="${escapeAttr(item.note || '')}" placeholder="説明">
+        <select class="menu-visible">
+          <option value="1" ${item.is_visible ? 'selected' : ''}>表示</option>
+          <option value="0" ${!item.is_visible ? 'selected' : ''}>非表示</option>
+        </select>
+        <input type="number" class="menu-sort" value="${escapeAttr(String(Number(item.sort_order || 9999)))}" placeholder="順番">
+        <input type="hidden" class="menu-group" value="${escapeAttr(item.menu_group || '')}">
+      </div>
+    `).join('');
+  }
+
+  function collectMenuAdminList(){
+    const rows = Array.from(document.querySelectorAll('#menuAdminList .menu-admin-row'));
+    return rows.map((row, idx) => {
+      return {
+        key: row.querySelector('.menu-key').value.trim(),
+        label: row.querySelector('.menu-label').value.trim(),
+        price: Number(row.querySelector('.menu-price').value || 0),
+        note: row.querySelector('.menu-note').value.trim(),
+        is_visible: row.querySelector('.menu-visible').value === '1',
+        sort_order: Number(row.querySelector('.menu-sort').value || (idx + 1)),
+        menu_group: row.querySelector('.menu-group').value.trim()
+      };
+    }).filter(item => item.key && item.label);
+  }
+
+  function addMenuAdminRow(){
+    const wrap = document.getElementById('menuAdminList');
+    if (!wrap) return;
+
+    const row = document.createElement('div');
+    row.className = 'menu-admin-row';
+    row.innerHTML = `
+      <input type="text" class="menu-key" value="" placeholder="KEY">
+      <input type="text" class="menu-label" value="" placeholder="表示名">
+      <input type="number" class="menu-price" value="0" placeholder="金額">
+      <input type="text" class="menu-note" value="" placeholder="説明">
+      <select class="menu-visible">
+        <option value="1" selected>表示</option>
+        <option value="0">非表示</option>
+      </select>
+      <input type="number" class="menu-sort" value="9999" placeholder="順番">
+      <input type="hidden" class="menu-group" value="custom">
+    `;
+    wrap.appendChild(row);
+  }
+
+  async function saveLogoConfig(){
+    const payload = {
+      logo_text: document.getElementById('cfgLogoText').value.trim(),
+      logo_subtext: document.getElementById('cfgLogoSubtext').value.trim(),
+      logo_image_url: document.getElementById('cfgLogoImageUrl').value.trim(),
+      logo_drive_file_id: document.getElementById('cfgLogoDriveFileId').value.trim(),
+      logo_use_drive_image: document.getElementById('cfgLogoUseDriveImage').value,
+      phone_notify_text: document.getElementById('cfgPhoneNotifyText').value.trim(),
+      main_title: document.getElementById('cfgLogoText').value.trim()
+    };
+
+    await withLoading(async ()=>{
+      await gsRun('api_saveConfig', payload);
+      await refreshAllData(true);
+      renderCalendar(false);
+      if (!document.getElementById('adminView').classList.contains('hidden')) {
+        renderCalendar(true);
+      }
+    }, '保存中...');
+  }
+
+  async function saveSameDayConfig(){
+    const payload = {
+      same_day_enabled: document.getElementById('cfgSameDayEnabled').value,
+      same_day_min_hours: document.getElementById('cfgSameDayMinHours').value
+    };
+
+    await withLoading(async ()=>{
+      await gsRun('api_saveConfig', payload);
+      await refreshAllData(true);
+      renderCalendar(false);
+      if (!document.getElementById('adminView').classList.contains('hidden')) {
+        renderCalendar(true);
+      }
+    }, '保存中...');
+  }
+
+  async function saveMenuMaster(){
+    const items = collectMenuAdminList();
+    await withLoading(async ()=>{
+      await gsRun('api_saveMenuMaster', items);
+      await refreshAllData(true);
+      renderCalendar(false);
+      if (!document.getElementById('adminView').classList.contains('hidden')) {
+        renderCalendar(true);
+      }
+    }, '保存中...');
+  }
+
+  function escapeHtml(str){
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeAttr(str){
+    return escapeHtml(str);
   }
 
   function debounce(fn, ms){
@@ -1685,16 +2236,14 @@
   }
 
   async function loadAdminIconWithFallback(){
-    const img = document.getElementById('adminLoginImg');
-    if (!img) return;
-    img.src = 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+    await updateLogoPreview();
   }
 
   async function init(){
     try{
       await withLoading(async ()=>{
         try{ await refreshConfig(); }catch(e){}
-        try{ await refreshData(true); }catch(e){}
+        try{ await refreshAllData(true); }catch(e){}
 
         try{ bindGridDelegation(); }catch(e){}
         try{ bindSheetRowClick(); }catch(e){}
@@ -1720,7 +2269,9 @@
       tapCount++;
       if (tapTimer) clearTimeout(tapTimer);
 
-      if (tapCount === 5){
+      const targetTapCount = Number(config.admin_tap_count || defaultConfig.admin_tap_count || 5);
+
+      if (tapCount === targetTapCount){
         document.getElementById('passwordModal').classList.remove('hidden');
         document.getElementById('adminPassword').value = '';
         document.getElementById('passwordError').classList.add('hidden');
@@ -1733,7 +2284,7 @@
 
     async function doAdminLogin(){
       const password = document.getElementById('adminPassword').value;
-      const adminPassword = '95123';
+      const adminPassword = config.admin_password || defaultConfig.admin_password;
 
       if (password !== adminPassword){
         document.getElementById('passwordError').classList.remove('hidden');
@@ -1749,7 +2300,7 @@
       try{
         await new Promise(r=>requestAnimationFrame(()=>r()));
         await withLoading(async ()=>{
-          await refreshData(true);
+          await refreshAllData(true);
           renderCalendar(true);
           updateStats();
         }, '管理画面を開いています...');
@@ -1789,7 +2340,7 @@
     document.getElementById('openSheetBtn').addEventListener('click', async ()=>{
       try{
         await withLoading(async ()=>{
-          await refreshData(true);
+          await refreshAllData(true);
           renderSheetView();
           updateStats();
         }, '読み込み中...');
@@ -1823,6 +2374,52 @@
     });
 
     document.getElementById('bookingForm').addEventListener('submit', submitBooking);
+
+    document.getElementById('saveLogoConfigBtn').addEventListener('click', async ()=>{
+      try{
+        await saveLogoConfig();
+        toast('ロゴ設定を保存しました', 1400);
+      }catch(_){}
+    });
+
+    document.getElementById('saveSameDayConfigBtn').addEventListener('click', async ()=>{
+      try{
+        await saveSameDayConfig();
+        toast('当日予約設定を保存しました', 1400);
+      }catch(_){}
+    });
+
+    document.getElementById('saveMenuMasterBtn').addEventListener('click', async ()=>{
+      try{
+        await saveMenuMaster();
+        toast('メニューを保存しました', 1400);
+      }catch(_){}
+    });
+
+    document.getElementById('addMenuItemBtn').addEventListener('click', ()=>{
+      addMenuAdminRow();
+    });
+
+    ['cfgLogoText','cfgLogoSubtext','cfgLogoImageUrl','cfgLogoDriveFileId','cfgLogoUseDriveImage'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', async ()=>{
+        config.logo_text = document.getElementById('cfgLogoText').value.trim();
+        config.logo_subtext = document.getElementById('cfgLogoSubtext').value.trim();
+        config.logo_image_url = document.getElementById('cfgLogoImageUrl').value.trim();
+        config.logo_drive_file_id = document.getElementById('cfgLogoDriveFileId').value.trim();
+        config.logo_use_drive_image = document.getElementById('cfgLogoUseDriveImage').value;
+        await updateLogoPreview();
+      });
+      el.addEventListener('change', async ()=>{
+        config.logo_text = document.getElementById('cfgLogoText').value.trim();
+        config.logo_subtext = document.getElementById('cfgLogoSubtext').value.trim();
+        config.logo_image_url = document.getElementById('cfgLogoImageUrl').value.trim();
+        config.logo_drive_file_id = document.getElementById('cfgLogoDriveFileId').value.trim();
+        config.logo_use_drive_image = document.getElementById('cfgLogoUseDriveImage').value;
+        await updateLogoPreview();
+      });
+    });
 
     window.addEventListener('resize', debounce(()=>{
       try{
