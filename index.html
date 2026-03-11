@@ -238,7 +238,7 @@
 
     .menu-admin-row{
       display:grid;
-      grid-template-columns: 170px 170px 1fr 120px 1fr 110px 110px;
+      grid-template-columns: 180px 220px 170px 1fr 120px 1fr 110px 110px;
       gap:10px;
       align-items:center;
       padding:10px 0;
@@ -318,6 +318,20 @@
 
     .small-status.ng{
       color:#dc2626;
+    }
+
+    .group-help-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#4b5563;
+      font-size:11px;
+      font-weight:800;
+      margin-right:6px;
+      margin-bottom:6px;
     }
 
     @media (max-width: 900px){
@@ -722,8 +736,18 @@
         <div class="admin-panel-card">
           <div class="admin-panel-title">メニュー・料金管理</div>
 
+          <div class="mb-3">
+            <span class="group-help-chip">料金概算（基本料金）= 料金概算だけに使う</span>
+            <span class="group-help-chip">介助内容 = 介助内容プルダウン</span>
+            <span class="group-help-chip">階段介助 = 階段介助プルダウン</span>
+            <span class="group-help-chip">機材レンタル = 機材レンタルプルダウン</span>
+            <span class="group-help-chip">往復送迎 = 往復送迎プルダウン</span>
+            <span class="group-help-chip">その他 = 保存のみ</span>
+          </div>
+
           <div class="menu-admin-head menu-admin-row">
             <div>日本語キー</div>
+            <div>どのプルダウンに出すか</div>
             <div>内部キー</div>
             <div>表示名</div>
             <div>金額</div>
@@ -826,7 +850,7 @@
 
   <script>
   const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbymnmGJ47LYBkjd61SVbVLcyQQirgLeIRXCP5-ezi7XGDJP0BPmTqg4pCoItd1NmWENsw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbx7ee4QPHaHneOGdtcgWv52wPCC091AJPaRVxRlkbSC9K4DJ-033-uxFSiSddYPS-D2LA/exec";
 
   function toast(msg='通信エラー', ms=2200){
     const el = document.getElementById('toast');
@@ -942,7 +966,7 @@
         finished = true;
         cleanup();
         reject(new Error('POST timeout'));
-      }, 20000);
+      }, 30000);
 
       iframe.onload = function(){
         if (!loadedOnce) {
@@ -983,6 +1007,8 @@
         data = await _jsonpCall(`${GAS_URL}?action=getMenuMaster`);
       } else if (func === 'api_getMenuKeyCatalog') {
         data = await _jsonpCall(`${GAS_URL}?action=getMenuKeyCatalog`);
+      } else if (func === 'api_getMenuGroupCatalog') {
+        data = await _jsonpCall(`${GAS_URL}?action=getMenuGroupCatalog`);
       } else if (func === 'api_getDriveImageDataUrl') {
         const fileId = args[0];
         data = await _jsonpCall(`${GAS_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
@@ -1083,6 +1109,7 @@
   let isExtendedView = false;
   let menuMaster = [];
   let menuKeyCatalog = [];
+  let menuGroupCatalog = [];
 
   let calendarDates = [];
   let adminCalendarDates = [];
@@ -1102,6 +1129,15 @@
     extended_enabled: '1'
   };
 
+  const defaultMenuGroupCatalog = [
+    { key: 'price', label: '料金概算（基本料金）' },
+    { key: 'assistance', label: '介助内容' },
+    { key: 'stair', label: '階段介助' },
+    { key: 'equipment', label: '機材レンタル' },
+    { key: 'round_trip', label: '往復送迎' },
+    { key: 'custom', label: 'その他（表示先なし）' }
+  ];
+
   function getMenuMap(){
     const map = {};
     (menuMaster || []).forEach(item => {
@@ -1118,12 +1154,37 @@
     return map;
   }
 
+  function getMenuGroupMap(){
+    const map = {};
+    const list = (menuGroupCatalog && menuGroupCatalog.length) ? menuGroupCatalog : defaultMenuGroupCatalog;
+    list.forEach(item => {
+      map[item.key] = item;
+    });
+    return map;
+  }
+
   function findCatalogByKey(key){
     return (menuKeyCatalog || []).find(item => String(item.key || '') === String(key || '')) || null;
   }
 
   function findCatalogByKeyJp(keyJp){
     return (menuKeyCatalog || []).find(item => String(item.key_jp || '') === String(keyJp || '')) || null;
+  }
+
+  function findMenuGroupByKey(groupKey){
+    const list = (menuGroupCatalog && menuGroupCatalog.length) ? menuGroupCatalog : defaultMenuGroupCatalog;
+    return list.find(item => String(item.key || '') === String(groupKey || '')) || null;
+  }
+
+  function getMenuGroupLabel(groupKey){
+    const hit = findMenuGroupByKey(groupKey);
+    return hit ? String(hit.label || hit.key || '') : (groupKey || 'その他');
+  }
+
+  function normalizeMenuGroup(groupKey){
+    const key = String(groupKey || '').trim();
+    const allowed = (menuGroupCatalog && menuGroupCatalog.length ? menuGroupCatalog : defaultMenuGroupCatalog).map(x => String(x.key));
+    return allowed.includes(key) ? key : 'custom';
   }
 
   function isMenuVisible(key){
@@ -2130,6 +2191,7 @@
       config = { ...defaultConfig, ...(data.config || config || {}) };
       menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
       menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
+      menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
       reservations = data.reservations || [];
       const blocks = data.blocks || [];
 
@@ -2218,6 +2280,21 @@
     return html;
   }
 
+  function buildMenuGroupOptions(selectedGroup){
+    const current = normalizeMenuGroup(selectedGroup || 'custom');
+    const list = (menuGroupCatalog && menuGroupCatalog.length) ? menuGroupCatalog : defaultMenuGroupCatalog;
+    let html = '';
+    list.forEach(item => {
+      html += `<option value="${escapeAttr(item.key || '')}" ${String(item.key || '') === current ? 'selected' : ''}>${escapeHtml(item.label || item.key || '')}</option>`;
+    });
+    return html;
+  }
+
+  function getMenuGroupForRow(item){
+    const catalog = findCatalogByKey(item.key || '');
+    return normalizeMenuGroup(item.menu_group || (catalog ? catalog.menu_group : 'custom'));
+  }
+
   function renderMenuAdminList(){
     const wrap = document.getElementById('menuAdminList');
     if (!wrap) return;
@@ -2234,6 +2311,11 @@
         <select class="menu-key-jp">
           ${buildMenuKeyJpOptions(item.key || '')}
         </select>
+
+        <select class="menu-group-select">
+          ${buildMenuGroupOptions(getMenuGroupForRow(item))}
+        </select>
+
         <input type="text" class="menu-key" value="${escapeAttr(item.key || '')}" placeholder="内部KEY" readonly>
         <input type="text" class="menu-label" value="${escapeAttr(item.label || '')}" placeholder="表示名">
         <input type="number" class="menu-price" value="${escapeAttr(String(Number(item.price || 0)))}" placeholder="金額">
@@ -2243,7 +2325,7 @@
           <option value="0" ${!item.is_visible ? 'selected' : ''}>非表示</option>
         </select>
         <input type="number" class="menu-sort" value="${escapeAttr(String(Number(item.sort_order || 9999)))}" placeholder="順番">
-        <input type="hidden" class="menu-group" value="${escapeAttr(item.menu_group || '')}">
+
         <input type="hidden" class="menu-key-jp-hidden" value="${escapeAttr(item.key_jp || getMenuKeyJp(item.key, ''))}">
         <input type="hidden" class="menu-required-flag" value="${item.required_flag ? '1' : '0'}">
       </div>
@@ -2256,8 +2338,8 @@
     const rows = Array.from(document.querySelectorAll('#menuAdminList .menu-admin-row'));
     rows.forEach(row => {
       const jpSelect = row.querySelector('.menu-key-jp');
+      const groupSelect = row.querySelector('.menu-group-select');
       const keyInput = row.querySelector('.menu-key');
-      const groupInput = row.querySelector('.menu-group');
       const labelInput = row.querySelector('.menu-label');
       const priceInput = row.querySelector('.menu-price');
       const hiddenKeyJp = row.querySelector('.menu-key-jp-hidden');
@@ -2272,7 +2354,6 @@
         keyInput.value = key;
 
         if (catalog){
-          groupInput.value = catalog.menu_group || '';
           hiddenKeyJp.value = catalog.key_jp || '';
           requiredFlag.value = catalog.required_flag ? '1' : '0';
 
@@ -2282,12 +2363,24 @@
           if (!priceInput.value.trim() || Number(priceInput.value || 0) === 0){
             priceInput.value = String(Number(catalog.default_price || 0));
           }
+
+          if (groupSelect && (!groupSelect.value || groupSelect.value === 'custom')) {
+            groupSelect.value = normalizeMenuGroup(catalog.menu_group || 'custom');
+          }
         } else {
-          groupInput.value = 'custom';
           hiddenKeyJp.value = '';
           requiredFlag.value = '0';
+          if (groupSelect && !groupSelect.value) {
+            groupSelect.value = 'custom';
+          }
         }
       });
+
+      if (groupSelect){
+        groupSelect.addEventListener('change', ()=>{
+          groupSelect.value = normalizeMenuGroup(groupSelect.value);
+        });
+      }
     });
   }
 
@@ -2295,7 +2388,6 @@
     const rows = Array.from(document.querySelectorAll('#menuAdminList .menu-admin-row'));
     return rows.map((row, idx) => {
       const key = row.querySelector('.menu-key').value.trim();
-      const jpSelect = row.querySelector('.menu-key-jp');
       const catalog = findCatalogByKey(key);
 
       let keyJp = row.querySelector('.menu-key-jp-hidden').value.trim();
@@ -2309,7 +2401,7 @@
         note: row.querySelector('.menu-note').value.trim(),
         is_visible: row.querySelector('.menu-visible').value === '1',
         sort_order: Number(row.querySelector('.menu-sort').value || (idx + 1)),
-        menu_group: row.querySelector('.menu-group').value.trim() || (catalog ? catalog.menu_group : 'custom'),
+        menu_group: normalizeMenuGroup(row.querySelector('.menu-group-select').value.trim() || (catalog ? catalog.menu_group : 'custom')),
         required_flag: row.querySelector('.menu-required-flag').value === '1'
       };
     }).filter(item => item.key && item.label);
@@ -2325,6 +2417,11 @@
       <select class="menu-key-jp">
         ${buildMenuKeyJpOptions('')}
       </select>
+
+      <select class="menu-group-select">
+        ${buildMenuGroupOptions('custom')}
+      </select>
+
       <input type="text" class="menu-key" value="" placeholder="内部KEY" readonly>
       <input type="text" class="menu-label" value="" placeholder="表示名">
       <input type="number" class="menu-price" value="0" placeholder="金額">
@@ -2334,7 +2431,7 @@
         <option value="0">非表示</option>
       </select>
       <input type="number" class="menu-sort" value="9999" placeholder="順番">
-      <input type="hidden" class="menu-group" value="custom">
+
       <input type="hidden" class="menu-key-jp-hidden" value="">
       <input type="hidden" class="menu-required-flag" value="0">
     `;
