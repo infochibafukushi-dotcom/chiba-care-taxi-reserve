@@ -238,7 +238,7 @@
 
     .menu-admin-row{
       display:grid;
-      grid-template-columns: 160px 1fr 120px 1fr 110px 110px;
+      grid-template-columns: 170px 170px 1fr 120px 1fr 110px 110px;
       gap:10px;
       align-items:center;
       padding:10px 0;
@@ -297,6 +297,27 @@
       line-height:1.5;
       margin-top:6px;
       font-weight:700;
+    }
+
+    .upload-box{
+      border:2px dashed #cbd5e1;
+      border-radius:16px;
+      padding:14px;
+      background:#f8fafc;
+    }
+
+    .small-status{
+      font-size:12px;
+      font-weight:800;
+      margin-top:8px;
+    }
+
+    .small-status.ok{
+      color:#059669;
+    }
+
+    .small-status.ng{
+      color:#dc2626;
     }
 
     @media (max-width: 900px){
@@ -579,7 +600,7 @@
             <div class="form-group">
               <label class="form-label">ロゴDrive fileId</label>
               <input type="text" id="cfgLogoDriveFileId" placeholder="DriveのfileId">
-              <div class="field-note">Drive画像を使う場合はこちら</div>
+              <div class="field-note">Drive画像を使う場合はこちら。アップロード後は自動で入ります</div>
             </div>
           </div>
 
@@ -597,7 +618,15 @@
             </div>
           </div>
 
-          <div class="config-grid-1 mt-4">
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ画像アップロード</label>
+              <div class="upload-box">
+                <input type="file" id="logoFileInput" accept="image/*" class="w-full">
+                <div class="field-note">PNG / JPG / WEBP など対応。アップロードするとDriveに保存します</div>
+                <div id="logoUploadStatus" class="small-status"></div>
+              </div>
+            </div>
             <div class="form-group">
               <label class="form-label">ロゴ画像プレビュー</label>
               <div class="logo-preview-wrap">
@@ -610,9 +639,47 @@
             </div>
           </div>
 
-          <div class="mt-4 flex justify-end">
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="uploadLogoBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700" type="button">
+              ロゴ画像をアップロード
+            </button>
             <button id="saveLogoConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700" type="button">
               ロゴ設定を保存
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-title">管理画面パスワード変更</div>
+
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">現在のパスワード</label>
+              <input type="password" id="cfgCurrentPassword" placeholder="現在のパスワード">
+            </div>
+            <div class="form-group">
+              <label class="form-label">新しいパスワード</label>
+              <input type="password" id="cfgNewPassword" placeholder="新しいパスワード">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">新しいパスワード（確認）</label>
+              <input type="password" id="cfgConfirmPassword" placeholder="確認用パスワード">
+            </div>
+            <div class="form-group">
+              <label class="form-label">案内</label>
+              <div class="upload-box">
+                <div class="field-note">4文字以上で設定してください</div>
+                <div id="passwordChangeStatus" class="small-status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="changePasswordBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
+              パスワードを変更
             </button>
           </div>
         </div>
@@ -656,7 +723,8 @@
           <div class="admin-panel-title">メニュー・料金管理</div>
 
           <div class="menu-admin-head menu-admin-row">
-            <div>キー</div>
+            <div>日本語キー</div>
+            <div>内部キー</div>
             <div>表示名</div>
             <div>金額</div>
             <div>説明</div>
@@ -758,7 +826,7 @@
 
   <script>
   const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbz0cd_ZkPBf4hXcY_XnbFnWRwMNnkl7IuCWP-ABcBEMQEAEjGaU-4kVvPpNrzGPMgk7rQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbymnmGJ47LYBkjd61SVbVLcyQQirgLeIRXCP5-ezi7XGDJP0BPmTqg4pCoItd1NmWENsw/exec";
 
   function toast(msg='通信エラー', ms=2200){
     const el = document.getElementById('toast');
@@ -874,7 +942,7 @@
         finished = true;
         cleanup();
         reject(new Error('POST timeout'));
-      }, 15000);
+      }, 20000);
 
       iframe.onload = function(){
         if (!loadedOnce) {
@@ -907,10 +975,14 @@
 
       if (func === 'api_getConfig') {
         data = await _jsonpCall(`${GAS_URL}?action=getConfig`);
+      } else if (func === 'api_getConfigPublic') {
+        data = await _jsonpCall(`${GAS_URL}?action=getConfigPublic`);
       } else if (func === 'api_getInitData') {
         data = await _jsonpCall(`${GAS_URL}?action=getInitData`);
       } else if (func === 'api_getMenuMaster') {
         data = await _jsonpCall(`${GAS_URL}?action=getMenuMaster`);
+      } else if (func === 'api_getMenuKeyCatalog') {
+        data = await _jsonpCall(`${GAS_URL}?action=getMenuKeyCatalog`);
       } else if (func === 'api_getDriveImageDataUrl') {
         const fileId = args[0];
         data = await _jsonpCall(`${GAS_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
@@ -938,6 +1010,12 @@
         data = await _postByForm('saveConfig', args[0]);
       } else if (func === 'api_saveMenuMaster') {
         data = await _postByForm('saveMenuMaster', args[0]);
+      } else if (func === 'api_uploadLogoImage') {
+        data = await _postByForm('uploadLogoImage', args[0]);
+      } else if (func === 'api_changeAdminPassword') {
+        data = await _postByForm('changeAdminPassword', args[0]);
+      } else if (func === 'api_verifyAdminPassword') {
+        data = await _postByForm('verifyAdminPassword', args[0]);
       } else {
         throw new Error(`未対応のAPIです: ${func}`);
       }
@@ -1004,12 +1082,14 @@
   let config = {};
   let isExtendedView = false;
   let menuMaster = [];
+  let menuKeyCatalog = [];
 
   let calendarDates = [];
   let adminCalendarDates = [];
 
   const defaultConfig = {
     main_title: '介護タクシー予約',
+    logo_text: '介護タクシー予約',
     logo_subtext: '丁寧・安全な送迎をご提供します',
     logo_image_url: '',
     logo_drive_file_id: '',
@@ -1017,9 +1097,9 @@
     phone_notify_text: '090-6331-4289',
     same_day_enabled: '0',
     same_day_min_hours: '3',
-    admin_password: '95123',
     admin_tap_count: '5',
-    max_forward_days: '30'
+    max_forward_days: '30',
+    extended_enabled: '1'
   };
 
   function getMenuMap(){
@@ -1028,6 +1108,22 @@
       map[item.key] = item;
     });
     return map;
+  }
+
+  function getCatalogMap(){
+    const map = {};
+    (menuKeyCatalog || []).forEach(item => {
+      map[item.key] = item;
+    });
+    return map;
+  }
+
+  function findCatalogByKey(key){
+    return (menuKeyCatalog || []).find(item => String(item.key || '') === String(key || '')) || null;
+  }
+
+  function findCatalogByKeyJp(keyJp){
+    return (menuKeyCatalog || []).find(item => String(item.key_jp || '') === String(keyJp || '')) || null;
   }
 
   function isMenuVisible(key){
@@ -1047,6 +1143,8 @@
   function getMenuLabel(key, fallback){
     const map = getMenuMap();
     if (map[key] && map[key].label) return String(map[key].label);
+    const catalog = findCatalogByKey(key);
+    if (catalog && catalog.default_label) return String(catalog.default_label);
     return fallback;
   }
 
@@ -1054,6 +1152,14 @@
     const map = getMenuMap();
     if (map[key] && map[key].note) return String(map[key].note);
     return fallback || '';
+  }
+
+  function getMenuKeyJp(key, fallback){
+    const map = getMenuMap();
+    if (map[key] && map[key].key_jp) return String(map[key].key_jp);
+    const catalog = findCatalogByKey(key);
+    if (catalog && catalog.key_jp) return String(catalog.key_jp);
+    return fallback || key || '';
   }
 
   function getItemsByGroup(group){
@@ -2005,9 +2111,9 @@
     });
   }
 
-  async function refreshConfig(){
+  async function refreshConfigPublic(){
     try{
-      const res = await gsRun('api_getConfig');
+      const res = await gsRun('api_getConfigPublic');
       if (res && res.isOk){
         config = { ...defaultConfig, ...(res.data || {}) };
         applyConfigToUI();
@@ -2017,12 +2123,13 @@
 
   async function refreshData(showToastOnFail=false){
     try{
-      const res = await gsRun('api_getInitData');
-      if (!res || !res.isOk) throw new Error('init failed');
+      const initRes = await gsRun('api_getInitData');
+      if (!initRes || !initRes.isOk) throw new Error('init failed');
 
-      const data = res.data || {};
+      const data = initRes.data || {};
       config = { ...defaultConfig, ...(data.config || config || {}) };
       menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
+      menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
       reservations = data.reservations || [];
       const blocks = data.blocks || [];
 
@@ -2102,6 +2209,15 @@
     if (mainImg) mainImg.src = finalSrc;
   }
 
+  function buildMenuKeyJpOptions(selectedKey){
+    const currentSelected = String(selectedKey || '');
+    let html = `<option value="">選択してください</option>`;
+    (menuKeyCatalog || []).forEach(item => {
+      html += `<option value="${escapeAttr(item.key || '')}" ${String(item.key || '') === currentSelected ? 'selected' : ''}>${escapeHtml(item.key_jp || item.key || '')}</option>`;
+    });
+    return html;
+  }
+
   function renderMenuAdminList(){
     const wrap = document.getElementById('menuAdminList');
     if (!wrap) return;
@@ -2115,7 +2231,10 @@
 
     wrap.innerHTML = items.map((item, idx) => `
       <div class="menu-admin-row" data-menu-row="${idx}">
-        <input type="text" class="menu-key" value="${escapeAttr(item.key || '')}" placeholder="KEY">
+        <select class="menu-key-jp">
+          ${buildMenuKeyJpOptions(item.key || '')}
+        </select>
+        <input type="text" class="menu-key" value="${escapeAttr(item.key || '')}" placeholder="内部KEY" readonly>
         <input type="text" class="menu-label" value="${escapeAttr(item.label || '')}" placeholder="表示名">
         <input type="number" class="menu-price" value="${escapeAttr(String(Number(item.price || 0)))}" placeholder="金額">
         <input type="text" class="menu-note" value="${escapeAttr(item.note || '')}" placeholder="説明">
@@ -2125,21 +2244,73 @@
         </select>
         <input type="number" class="menu-sort" value="${escapeAttr(String(Number(item.sort_order || 9999)))}" placeholder="順番">
         <input type="hidden" class="menu-group" value="${escapeAttr(item.menu_group || '')}">
+        <input type="hidden" class="menu-key-jp-hidden" value="${escapeAttr(item.key_jp || getMenuKeyJp(item.key, ''))}">
+        <input type="hidden" class="menu-required-flag" value="${item.required_flag ? '1' : '0'}">
       </div>
     `).join('');
+
+    bindMenuAdminRowEvents();
+  }
+
+  function bindMenuAdminRowEvents(){
+    const rows = Array.from(document.querySelectorAll('#menuAdminList .menu-admin-row'));
+    rows.forEach(row => {
+      const jpSelect = row.querySelector('.menu-key-jp');
+      const keyInput = row.querySelector('.menu-key');
+      const groupInput = row.querySelector('.menu-group');
+      const labelInput = row.querySelector('.menu-label');
+      const priceInput = row.querySelector('.menu-price');
+      const hiddenKeyJp = row.querySelector('.menu-key-jp-hidden');
+      const requiredFlag = row.querySelector('.menu-required-flag');
+
+      if (!jpSelect) return;
+
+      jpSelect.addEventListener('change', ()=>{
+        const key = String(jpSelect.value || '').trim();
+        const catalog = findCatalogByKey(key);
+
+        keyInput.value = key;
+
+        if (catalog){
+          groupInput.value = catalog.menu_group || '';
+          hiddenKeyJp.value = catalog.key_jp || '';
+          requiredFlag.value = catalog.required_flag ? '1' : '0';
+
+          if (!labelInput.value.trim()){
+            labelInput.value = catalog.default_label || '';
+          }
+          if (!priceInput.value.trim() || Number(priceInput.value || 0) === 0){
+            priceInput.value = String(Number(catalog.default_price || 0));
+          }
+        } else {
+          groupInput.value = 'custom';
+          hiddenKeyJp.value = '';
+          requiredFlag.value = '0';
+        }
+      });
+    });
   }
 
   function collectMenuAdminList(){
     const rows = Array.from(document.querySelectorAll('#menuAdminList .menu-admin-row'));
     return rows.map((row, idx) => {
+      const key = row.querySelector('.menu-key').value.trim();
+      const jpSelect = row.querySelector('.menu-key-jp');
+      const catalog = findCatalogByKey(key);
+
+      let keyJp = row.querySelector('.menu-key-jp-hidden').value.trim();
+      if (catalog && catalog.key_jp) keyJp = catalog.key_jp;
+
       return {
-        key: row.querySelector('.menu-key').value.trim(),
+        key: key,
+        key_jp: keyJp,
         label: row.querySelector('.menu-label').value.trim(),
         price: Number(row.querySelector('.menu-price').value || 0),
         note: row.querySelector('.menu-note').value.trim(),
         is_visible: row.querySelector('.menu-visible').value === '1',
         sort_order: Number(row.querySelector('.menu-sort').value || (idx + 1)),
-        menu_group: row.querySelector('.menu-group').value.trim()
+        menu_group: row.querySelector('.menu-group').value.trim() || (catalog ? catalog.menu_group : 'custom'),
+        required_flag: row.querySelector('.menu-required-flag').value === '1'
       };
     }).filter(item => item.key && item.label);
   }
@@ -2151,7 +2322,10 @@
     const row = document.createElement('div');
     row.className = 'menu-admin-row';
     row.innerHTML = `
-      <input type="text" class="menu-key" value="" placeholder="KEY">
+      <select class="menu-key-jp">
+        ${buildMenuKeyJpOptions('')}
+      </select>
+      <input type="text" class="menu-key" value="" placeholder="内部KEY" readonly>
       <input type="text" class="menu-label" value="" placeholder="表示名">
       <input type="number" class="menu-price" value="0" placeholder="金額">
       <input type="text" class="menu-note" value="" placeholder="説明">
@@ -2161,8 +2335,11 @@
       </select>
       <input type="number" class="menu-sort" value="9999" placeholder="順番">
       <input type="hidden" class="menu-group" value="custom">
+      <input type="hidden" class="menu-key-jp-hidden" value="">
+      <input type="hidden" class="menu-required-flag" value="0">
     `;
     wrap.appendChild(row);
+    bindMenuAdminRowEvents();
   }
 
   async function saveLogoConfig(){
@@ -2214,6 +2391,107 @@
     }, '保存中...');
   }
 
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadLogoImageFromFile(){
+    const input = document.getElementById('logoFileInput');
+    const statusEl = document.getElementById('logoUploadStatus');
+    if (!input || !input.files || !input.files[0]) {
+      toast('画像ファイルを選択してください');
+      if (statusEl){
+        statusEl.textContent = '画像ファイルを選択してください';
+        statusEl.className = 'small-status ng';
+      }
+      return;
+    }
+
+    const file = input.files[0];
+
+    try{
+      if (statusEl){
+        statusEl.textContent = 'アップロード中...';
+        statusEl.className = 'small-status';
+      }
+
+      const dataUrl = await fileToDataUrl(file);
+      const payload = {
+        file_name: file.name || ('logo_' + Date.now() + '.png'),
+        mime_type: file.type || 'image/png',
+        base64_data: dataUrl
+      };
+
+      await withLoading(async ()=>{
+        await gsRun('api_uploadLogoImage', payload);
+        await refreshAllData(true);
+        renderCalendar(false);
+        if (!document.getElementById('adminView').classList.contains('hidden')) {
+          renderCalendar(true);
+        }
+      }, 'ロゴ画像アップロード中...');
+
+      if (statusEl){
+        statusEl.textContent = 'アップロードが完了しました';
+        statusEl.className = 'small-status ok';
+      }
+
+      toast('ロゴ画像をアップロードしました', 1600);
+      input.value = '';
+
+    }catch(e){
+      if (statusEl){
+        statusEl.textContent = e?.message || 'アップロードに失敗しました';
+        statusEl.className = 'small-status ng';
+      }
+      toast(e?.message || 'アップロードに失敗しました');
+    }
+  }
+
+  async function changeAdminPassword(){
+    const currentPassword = document.getElementById('cfgCurrentPassword').value.trim();
+    const newPassword = document.getElementById('cfgNewPassword').value.trim();
+    const confirmPassword = document.getElementById('cfgConfirmPassword').value.trim();
+    const statusEl = document.getElementById('passwordChangeStatus');
+
+    try{
+      if (statusEl){
+        statusEl.textContent = '';
+        statusEl.className = 'small-status';
+      }
+
+      await withLoading(async ()=>{
+        await gsRun('api_changeAdminPassword', {
+          current_password: currentPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword
+        });
+      }, 'パスワード変更中...');
+
+      document.getElementById('cfgCurrentPassword').value = '';
+      document.getElementById('cfgNewPassword').value = '';
+      document.getElementById('cfgConfirmPassword').value = '';
+
+      if (statusEl){
+        statusEl.textContent = 'パスワードを変更しました';
+        statusEl.className = 'small-status ok';
+      }
+
+      toast('パスワードを変更しました', 1600);
+    }catch(e){
+      if (statusEl){
+        statusEl.textContent = e?.message || 'パスワード変更に失敗しました';
+        statusEl.className = 'small-status ng';
+      }
+      toast(e?.message || 'パスワード変更に失敗しました');
+    }
+  }
+
   function escapeHtml(str){
     return String(str || '')
       .replace(/&/g, '&amp;')
@@ -2242,7 +2520,7 @@
   async function init(){
     try{
       await withLoading(async ()=>{
-        try{ await refreshConfig(); }catch(e){}
+        try{ await refreshConfigPublic(); }catch(e){}
         try{ await refreshAllData(true); }catch(e){}
 
         try{ bindGridDelegation(); }catch(e){}
@@ -2284,28 +2562,31 @@
 
     async function doAdminLogin(){
       const password = String(document.getElementById('adminPassword').value || '').trim();
-      const adminPassword = String(config.admin_password || defaultConfig.admin_password || '95123').trim();
 
-      if (password !== adminPassword){
+      try{
+        await withLoading(async ()=>{
+          await gsRun('api_verifyAdminPassword', { password: password });
+        }, '認証中...');
+
+        document.getElementById('passwordModal').classList.add('hidden');
+        document.getElementById('calendarView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+
+        try{
+          await new Promise(r=>requestAnimationFrame(()=>r()));
+          await withLoading(async ()=>{
+            await refreshAllData(true);
+            renderCalendar(true);
+            updateStats();
+          }, '管理画面を開いています...');
+        }catch(_){
+          toast('読み込みに時間がかかっています', 1600);
+        }
+
+      }catch(e){
         document.getElementById('passwordError').classList.remove('hidden');
         document.getElementById('adminPassword').value = '';
         document.getElementById('adminPassword').focus();
-        return;
-      }
-
-      document.getElementById('passwordModal').classList.add('hidden');
-      document.getElementById('calendarView').classList.add('hidden');
-      document.getElementById('adminView').classList.remove('hidden');
-
-      try{
-        await new Promise(r=>requestAnimationFrame(()=>r()));
-        await withLoading(async ()=>{
-          await refreshAllData(true);
-          renderCalendar(true);
-          updateStats();
-        }, '管理画面を開いています...');
-      }catch(_){
-        toast('読み込みに時間がかかっています', 1600);
       }
     }
 
@@ -2382,6 +2663,14 @@
       }catch(_){}
     });
 
+    document.getElementById('uploadLogoBtn').addEventListener('click', async ()=>{
+      await uploadLogoImageFromFile();
+    });
+
+    document.getElementById('changePasswordBtn').addEventListener('click', async ()=>{
+      await changeAdminPassword();
+    });
+
     document.getElementById('saveSameDayConfigBtn').addEventListener('click', async ()=>{
       try{
         await saveSameDayConfig();
@@ -2419,6 +2708,23 @@
         config.logo_use_drive_image = document.getElementById('cfgLogoUseDriveImage').value;
         await updateLogoPreview();
       });
+    });
+
+    document.getElementById('logoFileInput').addEventListener('change', async ()=>{
+      const input = document.getElementById('logoFileInput');
+      const statusEl = document.getElementById('logoUploadStatus');
+      if (input && input.files && input.files[0]) {
+        if (statusEl){
+          statusEl.textContent = `選択中: ${input.files[0].name}`;
+          statusEl.className = 'small-status';
+        }
+
+        try{
+          const dataUrl = await fileToDataUrl(input.files[0]);
+          const previewImg = document.getElementById('adminLogoPreview');
+          if (previewImg) previewImg.src = dataUrl;
+        }catch(_){}
+      }
     });
 
     window.addEventListener('resize', debounce(()=>{
