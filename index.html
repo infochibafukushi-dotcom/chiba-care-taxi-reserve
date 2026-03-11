@@ -2283,8 +2283,8 @@
     });
 
     async function doAdminLogin(){
-      const password = document.getElementById('adminPassword').value;
-      const adminPassword = config.admin_password || defaultConfig.admin_password;
+      const password = String(document.getElementById('adminPassword').value || '').trim();
+      const adminPassword = String(config.admin_password || defaultConfig.admin_password || '95123').trim();
 
       if (password !== adminPassword){
         document.getElementById('passwordError').classList.remove('hidden');
@@ -2434,3 +2434,4 @@
   </script>
 </body>
 </html>
+
