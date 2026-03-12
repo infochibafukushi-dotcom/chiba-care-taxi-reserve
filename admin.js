@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzg7goq3dRL1RoHURKpXZakB8cAt76hvTwWqPDThbaAc4Hc8kl2lThZ2nFMbiv9yjJKpA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwY_dn4thR512jFrIKjW28pH5ALOeHmzquOt_Dv608B3lxp-lx-nW0C2nR_5u-K933Liw/exec";
 const PUBLIC_PAGE_URL = "index.html";
 const ADMIN_AUTH_KEY = "chiba_care_taxi_admin_auth";
 const ADMIN_AUTH_TIME_KEY = "chiba_care_taxi_admin_auth_time";
