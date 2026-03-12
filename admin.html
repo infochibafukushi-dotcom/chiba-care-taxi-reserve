@@ -87,15 +87,22 @@
     .card-zero{padding:0 !important;}
     .card-zero-inner{padding:0 !important;margin:0 !important;}
 
-    .price-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
-    .price-item:last-child{border-bottom:none}
-    .price-label{color:#666;font-weight:600}
-    .price-value{color:#10b981;font-weight:800}
     .warning-text{color:#dc2626;font-size:13px;font-weight:700;animation:slideDown .3s ease-out}
     @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-    input,select,textarea{font-size:16px!important;border-radius:12px!important;border:2px solid #e5e7eb!important;padding:12px 16px!important;transition:all .3s;font-family:'Noto Sans JP',sans-serif}
-    input:focus,select:focus,textarea:focus{outline:none;border-color:#10b981!important;box-shadow:0 0 0 3px rgba(16,185,129,.1)!important}
+    input,select,textarea{
+      font-size:16px!important;
+      border-radius:12px!important;
+      border:2px solid #e5e7eb!important;
+      padding:12px 16px!important;
+      transition:all .3s;
+      font-family:'Noto Sans JP',sans-serif
+    }
+    input:focus,select:focus,textarea:focus{
+      outline:none;
+      border-color:#10b981!important;
+      box-shadow:0 0 0 3px rgba(16,185,129,.1)!important
+    }
 
     .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .3s ease-out}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -196,7 +203,39 @@
       font-size:18px;
       font-weight:800;
       color:#1f2937;
-      margin-bottom:14px;
+      margin-bottom:0;
+    }
+
+    .admin-panel-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      cursor:pointer;
+      user-select:none;
+      padding:4px 0;
+    }
+
+    .admin-panel-toggle{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#374151;
+      font-size:18px;
+      font-weight:900;
+      flex-shrink:0;
+    }
+
+    .admin-panel-body{
+      margin-top:14px;
+    }
+
+    .admin-panel-body.collapsed{
+      display:none;
     }
 
     .menu-admin-row{
@@ -330,12 +369,33 @@
       margin-bottom:20px;
     }
 
+    .rule-grid{
+      display:grid;
+      grid-template-columns: 120px 1fr 1fr 1fr 1fr;
+      gap:10px;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    .rule-head{
+      font-size:12px;
+      font-weight:800;
+      color:#6b7280;
+      padding-bottom:8px;
+      border-bottom:2px solid #e5e7eb;
+      margin-bottom:8px;
+    }
+
     @media (max-width: 900px){
       .menu-admin-row{
         grid-template-columns: 1fr;
         gap:8px;
       }
       .config-grid{
+        grid-template-columns: 1fr;
+      }
+      .rule-grid{
         grid-template-columns: 1fr;
       }
     }
@@ -394,180 +454,271 @@
         <div class="stat-box"><div class="stat-number" id="completedCount">0</div><div class="stat-label">完了</div></div>
       </div>
 
-      <div class="admin-panel-card">
-        <div class="admin-panel-title">ロゴ・表示設定</div>
-
-        <div class="config-grid">
-          <div class="form-group">
-            <label class="form-label">ロゴ文字</label>
-            <input type="text" id="cfgLogoText" placeholder="介護タクシー予約">
-          </div>
-          <div class="form-group">
-            <label class="form-label">ロゴサブテキスト</label>
-            <input type="text" id="cfgLogoSubtext" placeholder="丁寧・安全な送迎をご提供します">
-          </div>
+      <div class="admin-panel-card" data-panel-key="logoPanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">ロゴ・GitHub接続・表示設定</div>
+          <div class="admin-panel-toggle" data-panel-toggle="logoPanel">−</div>
         </div>
+        <div class="admin-panel-body" id="logoPanelBody">
 
-        <div class="config-grid mt-4">
-          <div class="form-group">
-            <label class="form-label">ロゴ画像URL</label>
-            <input type="text" id="cfgLogoImageUrl" placeholder="https://raw.githubusercontent.com/.../logo.png">
-            <div class="field-note">GitHub raw画像URLを入れる場合はこちら</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">ロゴDrive fileId</label>
-            <input type="text" id="cfgLogoDriveFileId" placeholder="DriveのfileId">
-            <div class="field-note">Drive画像を使う場合はこちら。アップロード後は自動で入ります</div>
-          </div>
-        </div>
-
-        <div class="config-grid mt-4">
-          <div class="form-group">
-            <label class="form-label">Drive画像を優先</label>
-            <select id="cfgLogoUseDriveImage">
-              <option value="0">OFF</option>
-              <option value="1">ON</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">完了画面の案内電話番号</label>
-            <input type="text" id="cfgPhoneNotifyText" placeholder="090-6331-4289">
-          </div>
-        </div>
-
-        <div class="config-grid mt-4">
-          <div class="form-group">
-            <label class="form-label">ロゴ画像アップロード</label>
-            <div class="upload-box">
-              <input type="file" id="logoFileInput" accept="image/*" class="w-full">
-              <div class="field-note">PNG / JPG / WEBP など対応。アップロードするとDriveに保存します</div>
-              <div id="logoUploadStatus" class="small-status"></div>
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">ロゴ文字</label>
+              <input type="text" id="cfgLogoText" placeholder="介護タクシー予約">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ロゴサブテキスト</label>
+              <input type="text" id="cfgLogoSubtext" placeholder="丁寧・安全な送迎をご提供します">
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">ロゴ画像プレビュー</label>
-            <div class="logo-preview-wrap">
-              <img id="adminLogoPreview" class="logo-preview-img" src="https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png" alt="logo preview">
-              <div>
-                <div id="adminLogoPreviewText" class="font-extrabold text-gray-800 text-lg">介護タクシー予約</div>
-                <div id="adminLogoPreviewSubtext" class="text-sm text-gray-500 font-bold mt-1">丁寧・安全な送迎をご提供します</div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ画像URL</label>
+              <input type="text" id="cfgLogoImageUrl" placeholder="https://raw.githubusercontent.com/...">
+              <div class="field-note">GitHub raw画像URL。アップロード後は自動で入ります</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub画像を優先</label>
+              <select id="cfgLogoUseGithubImage">
+                <option value="1">ON</option>
+                <option value="0">OFF</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">GitHub ユーザー名</label>
+              <input type="text" id="cfgGithubUsername" placeholder="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label">リポジトリ名</label>
+              <input type="text" id="cfgGithubRepo" placeholder="repo-name">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ブランチ名</label>
+              <input type="text" id="cfgGithubBranch" placeholder="main">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub保存ベースパス</label>
+              <input type="text" id="cfgGithubAssetsBasePath" placeholder="assets など">
+              <div class="field-note">空でも可。例: assets</div>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ保存パス</label>
+              <input type="text" id="cfgLogoGithubPath" placeholder="logo/logo.png">
+              <div class="field-note">例: logo/logo.png</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub Personal Access Token</label>
+              <input type="password" id="cfgGithubToken" placeholder="ghp_...">
+              <div class="field-note">保存後もそのまま利用されます</div>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">完了画面の案内電話番号</label>
+              <input type="text" id="cfgPhoneNotifyText" placeholder="090-6331-4289">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ロゴ画像アップロード</label>
+              <div class="upload-box">
+                <input type="file" id="logoFileInput" accept="image/*" class="w-full">
+                <div class="field-note">PNG / JPG / WEBP をGitHubへ保存します</div>
+                <div id="logoUploadStatus" class="small-status"></div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="mt-4 flex justify-end gap-2">
-          <button id="uploadLogoBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700" type="button">
-            ロゴ画像をアップロード
-          </button>
-          <button id="saveLogoConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700" type="button">
-            ロゴ設定を保存
-          </button>
-        </div>
-      </div>
-
-      <div class="admin-panel-card">
-        <div class="admin-panel-title">管理画面パスワード変更</div>
-
-        <div class="config-grid">
-          <div class="form-group">
-            <label class="form-label">現在のパスワード</label>
-            <input type="password" id="cfgCurrentPassword" placeholder="現在のパスワード">
-          </div>
-          <div class="form-group">
-            <label class="form-label">新しいパスワード</label>
-            <input type="password" id="cfgNewPassword" placeholder="新しいパスワード">
-          </div>
-        </div>
-
-        <div class="config-grid mt-4">
-          <div class="form-group">
-            <label class="form-label">新しいパスワード（確認）</label>
-            <input type="password" id="cfgConfirmPassword" placeholder="確認用パスワード">
-          </div>
-          <div class="form-group">
-            <label class="form-label">案内</label>
-            <div class="upload-box">
-              <div class="field-note">4文字以上で設定してください</div>
-              <div id="passwordChangeStatus" class="small-status"></div>
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ロゴ画像プレビュー</label>
+              <div class="logo-preview-wrap">
+                <img id="adminLogoPreview" class="logo-preview-img" src="https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png" alt="logo preview">
+                <div>
+                  <div id="adminLogoPreviewText" class="font-extrabold text-gray-800 text-lg">介護タクシー予約</div>
+                  <div id="adminLogoPreviewSubtext" class="text-sm text-gray-500 font-bold mt-1">丁寧・安全な送迎をご提供します</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">案内</label>
+              <div class="upload-box">
+                <div class="field-note">Drive保存は使わず、GitHub保存で運用します</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="mt-4 flex justify-end">
-          <button id="changePasswordBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
-            パスワードを変更
-          </button>
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="uploadLogoBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700" type="button">
+              ロゴ画像をアップロード
+            </button>
+            <button id="saveLogoConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700" type="button">
+              ロゴ・GitHub設定を保存
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <div class="admin-panel-card">
-        <div class="admin-panel-title">当日予約設定</div>
-
-        <div class="config-grid">
-          <div class="form-group">
-            <label class="form-label">当日予約</label>
-            <select id="cfgSameDayEnabled">
-              <option value="0">表示しない</option>
-              <option value="1">表示する</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">当日予約の最短時間</label>
-            <select id="cfgSameDayMinHours">
-              <option value="1">1時間後</option>
-              <option value="2">2時間後</option>
-              <option value="3">3時間後</option>
-              <option value="4">4時間後</option>
-              <option value="5">5時間後</option>
-              <option value="6">6時間後</option>
-            </select>
-          </div>
+      <div class="admin-panel-card" data-panel-key="passwordPanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">管理画面パスワード変更</div>
+          <div class="admin-panel-toggle" data-panel-toggle="passwordPanel">−</div>
         </div>
+        <div class="admin-panel-body" id="passwordPanelBody">
 
-        <div class="field-note mt-3">
-          当日予約を表示する場合、現在時刻＋設定時間より前の枠は自動でX表示になります。
-        </div>
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">現在のパスワード</label>
+              <input type="password" id="cfgCurrentPassword" placeholder="現在のパスワード">
+            </div>
+            <div class="form-group">
+              <label class="form-label">新しいパスワード</label>
+              <input type="password" id="cfgNewPassword" placeholder="新しいパスワード">
+            </div>
+          </div>
 
-        <div class="mt-4 flex justify-end">
-          <button id="saveSameDayConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700" type="button">
-            当日予約設定を保存
-          </button>
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">新しいパスワード（確認）</label>
+              <input type="password" id="cfgConfirmPassword" placeholder="確認用パスワード">
+            </div>
+            <div class="form-group">
+              <label class="form-label">案内</label>
+              <div class="upload-box">
+                <div class="field-note">4文字以上で設定してください</div>
+                <div id="passwordChangeStatus" class="small-status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="changePasswordBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
+              パスワードを変更
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <div class="admin-panel-card">
-        <div class="admin-panel-title">メニュー・料金管理</div>
-
-        <div class="mb-3">
-          <span class="group-help-chip">料金概算（基本料金）= 料金概算だけに使う</span>
-          <span class="group-help-chip">介助内容 = 介助内容プルダウン</span>
-          <span class="group-help-chip">階段介助 = 階段介助プルダウン</span>
-          <span class="group-help-chip">機材レンタル = 機材レンタルプルダウン</span>
-          <span class="group-help-chip">往復送迎 = 往復送迎プルダウン</span>
-          <span class="group-help-chip">その他 = 保存のみ</span>
+      <div class="admin-panel-card" data-panel-key="dayPanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">当日予約設定</div>
+          <div class="admin-panel-toggle" data-panel-toggle="dayPanel">−</div>
         </div>
+        <div class="admin-panel-body" id="dayPanelBody">
 
-        <div class="menu-admin-head menu-admin-row">
-          <div>日本語キー</div>
-          <div>どのプルダウンに出すか</div>
-          <div>内部キー</div>
-          <div>表示名</div>
-          <div>金額</div>
-          <div>説明</div>
-          <div>表示</div>
-          <div>並び順</div>
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">当日予約</label>
+              <select id="cfgSameDayEnabled">
+                <option value="0">表示しない</option>
+                <option value="1">表示する</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">当日予約の最短時間</label>
+              <select id="cfgSameDayMinHours">
+                <option value="1">1時間後</option>
+                <option value="2">2時間後</option>
+                <option value="3">3時間後</option>
+                <option value="4">4時間後</option>
+                <option value="5">5時間後</option>
+                <option value="6">6時間後</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-note mt-3">
+            当日予約を表示する場合、現在時刻＋設定時間より前の枠は自動でX表示になります。
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="saveSameDayConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700" type="button">
+              当日予約設定を保存
+            </button>
+          </div>
+
         </div>
+      </div>
 
-        <div id="menuAdminList"></div>
+      <div class="admin-panel-card" data-panel-key="menuPanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">メニュー・料金管理</div>
+          <div class="admin-panel-toggle" data-panel-toggle="menuPanel">−</div>
+        </div>
+        <div class="admin-panel-body" id="menuPanelBody">
 
-        <div class="mt-4 flex justify-end gap-2">
-          <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
-            行追加
-          </button>
-          <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
-            メニューを保存
-          </button>
+          <div class="mb-3">
+            <span class="group-help-chip">料金概算（基本料金）= 料金概算だけに使う</span>
+            <span class="group-help-chip">介助内容 = 介助内容プルダウン</span>
+            <span class="group-help-chip">階段介助 = 階段介助プルダウン</span>
+            <span class="group-help-chip">機材レンタル = 機材レンタルプルダウン</span>
+            <span class="group-help-chip">往復送迎 = 往復送迎プルダウン</span>
+            <span class="group-help-chip">その他 = 保存のみ</span>
+          </div>
+
+          <div class="menu-admin-head menu-admin-row">
+            <div>日本語キー</div>
+            <div>どのプルダウンに出すか</div>
+            <div>内部キー</div>
+            <div>表示名</div>
+            <div>金額</div>
+            <div>説明</div>
+            <div>表示</div>
+            <div>並び順</div>
+          </div>
+
+          <div id="menuAdminList"></div>
+
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
+              行追加
+            </button>
+            <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
+              メニューを保存
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="admin-panel-card" data-panel-key="rulePanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">自動設定ルール</div>
+          <div class="admin-panel-toggle" data-panel-toggle="rulePanel">−</div>
+        </div>
+        <div class="admin-panel-body" id="rulePanelBody">
+
+          <div class="field-note mb-3">
+            どの選択をした時に、どの項目を自動で追加するかを設定します。
+          </div>
+
+          <div class="rule-head rule-grid">
+            <div>有効</div>
+            <div>対象プルダウン</div>
+            <div>対象キー</div>
+            <div>追加先プルダウン</div>
+            <div>追加キー</div>
+          </div>
+
+          <div id="autoRuleList"></div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="saveAutoRuleConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white hover:from-fuchsia-600 hover:to-fuchsia-700" type="button">
+              自動設定ルールを保存
+            </button>
+          </div>
+
         </div>
       </div>
 
