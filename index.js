@@ -1,5 +1,5 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzd65XmVTR-oxl_-qvbVs51S2JCmv_QBN7OS7wlfaaIxp5eCA486C_vnzI7Y07Llgpy/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzg7goq3dRL1RoHURKpXZakB8cAt76hvTwWqPDThbaAc4Hc8kl2lThZ2nFMbiv9yjJKpA/exec";
 const ADMIN_PAGE_URL = "admin.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -118,6 +118,8 @@ const gsRun = async (func, ...args) => {
       data = await _jsonpCall(`${GAS_URL}?action=getMenuKeyCatalog`);
     } else if (func === 'api_getMenuGroupCatalog') {
       data = await _jsonpCall(`${GAS_URL}?action=getMenuGroupCatalog`);
+    } else if (func === 'api_getAutoRuleCatalog') {
+      data = await _jsonpCall(`${GAS_URL}?action=getAutoRuleCatalog`);
     } else if (func === 'api_getDriveImageDataUrl') {
       const fileId = args[0];
       data = await _jsonpCall(`${GAS_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
@@ -192,6 +194,7 @@ let isExtendedView = false;
 let menuMaster = [];
 let menuKeyCatalog = [];
 let menuGroupCatalog = [];
+let autoRuleCatalog = [];
 let calendarDates = [];
 
 const defaultConfig = {
@@ -201,6 +204,8 @@ const defaultConfig = {
   logo_image_url: '',
   logo_drive_file_id: '',
   logo_use_drive_image: '0',
+  logo_use_github_image: '1',
+  logo_github_path: '',
   phone_notify_text: '090-6331-4289',
   same_day_enabled: '0',
   same_day_min_hours: '3',
@@ -253,7 +258,10 @@ const defaultConfig = {
   calendar_scroll_guide_text: '上下・左右にスクロールして、他の日付や時間を確認できます。',
   warning_stair_bodyassist_text: '警告: 階段介助ご利用の場合、身体介助がセットになります',
   warning_wheelchair_damage_text: '警告: 車いす固定による傷、すり傷などは保証対象外になります',
-  warning_stretcher_bodyassist_text: '警告: ストレッチャー利用時に2名体制介助料5,000円と身体介助が必須となります'
+  warning_stretcher_bodyassist_text: '警告: ストレッチャー利用時に2名体制介助料5,000円と身体介助が必須となります',
+  rule_force_body_assist_on_stair: '1',
+  rule_force_body_assist_on_stretcher: '1',
+  rule_force_stretcher_staff2_on_stretcher: '1'
 };
 
 const defaultMenuGroupCatalog = [
@@ -310,6 +318,15 @@ function getItemsByGroup(group){
     if (aOrder !== bOrder) return aOrder - bOrder;
     return String(a.key).localeCompare(String(b.key));
   });
+}
+
+function getRuleByIndex(index){
+  return (autoRuleCatalog || []).find(rule => Number(rule.index) === Number(index)) || null;
+}
+
+function getRuleEnabled(index){
+  const rule = getRuleByIndex(index);
+  return !!(rule && rule.enabled);
 }
 
 function formatDate(date) {
@@ -690,6 +707,7 @@ function calculatePrice(){
   const assistanceSelect = document.getElementById('assistanceType');
 
   let mustUseBodyAssist = false;
+  let mustUseStretcherStaff2 = false;
 
   stairWarning.classList.add('hidden');
   stretcherWarning.classList.add('hidden');
@@ -715,8 +733,14 @@ function calculatePrice(){
   breakdown.push({ name:getMenuLabel('DISPATCH', '配車予約'), price:dispatch });
   breakdown.push({ name:getMenuLabel('SPECIAL_VEHICLE', '特殊車両使用料'), price:specialVehicle });
 
-  if (stairAssistance && stairAssistance !== getMenuLabel('STAIR_NONE', '不要')){
-    if (stairAssistance !== getMenuLabel('STAIR_WATCH', '見守り介助')){
+  const stairNeedBody = (
+    stairAssistance &&
+    stairAssistance !== getMenuLabel('STAIR_NONE', '不要') &&
+    stairAssistance !== getMenuLabel('STAIR_WATCH', '見守り介助')
+  );
+
+  if (stairNeedBody) {
+    if (String(config.rule_force_body_assist_on_stair || '1') === '1' || getRuleEnabled(1) || getRuleEnabled(2) || getRuleEnabled(3) || getRuleEnabled(4)) {
       stairWarning.textContent = config.warning_stair_bodyassist_text || defaultConfig.warning_stair_bodyassist_text;
       stairWarning.classList.remove('hidden');
       mustUseBodyAssist = true;
@@ -726,7 +750,13 @@ function calculatePrice(){
   if (equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル')){
     stretcherWarning.textContent = config.warning_stretcher_bodyassist_text || defaultConfig.warning_stretcher_bodyassist_text;
     stretcherWarning.classList.remove('hidden');
-    mustUseBodyAssist = true;
+
+    if (String(config.rule_force_body_assist_on_stretcher || '1') === '1' || getRuleEnabled(5)) {
+      mustUseBodyAssist = true;
+    }
+    if (String(config.rule_force_stretcher_staff2_on_stretcher || '1') === '1' || getRuleEnabled(6)) {
+      mustUseStretcherStaff2 = true;
+    }
   }
 
   if (equipmentRental === getMenuLabel('EQUIP_OWN_WHEELCHAIR', 'ご自身車いす')){
@@ -765,9 +795,13 @@ function calculatePrice(){
     total += recliningPrice;
     breakdown.push({ name:getMenuLabel('EQUIP_RECLINING', 'リクライニング車いすレンタル'), price:recliningPrice });
   } else if (equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル')){
-    total += stretcherPrice + stretcherStaffPrice;
+    total += stretcherPrice;
     breakdown.push({ name:getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル'), price:stretcherPrice });
-    breakdown.push({ name:getMenuLabel('EQUIP_STRETCHER_STAFF2', 'ストレッチャー2名体制介助料'), price:stretcherStaffPrice });
+
+    if (mustUseStretcherStaff2){
+      total += stretcherStaffPrice;
+      breakdown.push({ name:getMenuLabel('EQUIP_STRETCHER_STAFF2', 'ストレッチャー2名体制介助料'), price:stretcherStaffPrice });
+    }
   } else if (equipmentRental === getMenuLabel('EQUIP_WHEELCHAIR', '車いすレンタル')){
     breakdown.push({ name:getMenuLabel('EQUIP_WHEELCHAIR', '車いすレンタル'), price:0 });
   } else if (equipmentRental === getMenuLabel('EQUIP_OWN_WHEELCHAIR', 'ご自身車いす')){
@@ -835,7 +869,11 @@ async function submitBooking(e){
   const total = calculatePrice();
 
   const equipmentRental = document.getElementById('equipmentRental').value;
-  const stretcher2Staff = equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル') ? 'あり' : 'なし';
+  const stretcherTwoStaff = (
+    equipmentRental === getMenuLabel('EQUIP_STRETCHER', 'ストレッチャーレンタル') &&
+    (String(config.rule_force_stretcher_staff2_on_stretcher || '1') === '1' || getRuleEnabled(6))
+  ) ? 'あり' : 'なし';
+
   const slotDateStr = ymdLocal(selectedSlot.date);
 
   const reservation = {
@@ -849,7 +887,7 @@ async function submitBooking(e){
     assistance_type: document.getElementById('assistanceType').value,
     stair_assistance: document.getElementById('stairAssistance').value,
     equipment_rental: equipmentRental,
-    stretcher_two_staff: stretcher2Staff,
+    stretcher_two_staff: stretcherTwoStaff,
     round_trip: document.getElementById('roundTrip').value,
     notes: document.getElementById('notes').value.trim() || '',
     total_price: total,
@@ -913,6 +951,7 @@ async function refreshData(showToastOnFail=false){
     menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
     menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
     menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
+    autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
     reservations = data.reservations || [];
     const blocks = data.blocks || [];
 
@@ -1019,7 +1058,7 @@ async function updateLogoPreview(){
   const useDrive = String(config.logo_use_drive_image || '0') === '1';
   const driveFileId = String(config.logo_drive_file_id || '').trim();
 
-  if (useDrive && driveFileId) {
+  if (!finalSrc && useDrive && driveFileId) {
     try{
       const res = await gsRun('api_getDriveImageDataUrl', driveFileId);
       if (res && res.isOk && res.data && res.data.dataUrl) {
@@ -1028,7 +1067,7 @@ async function updateLogoPreview(){
     }catch(_){}
   }
 
-  if (mainImg) mainImg.src = finalSrc;
+  if (mainImg) mainImg.src = finalSrc || 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
 }
 
 function escapeHtml(str){
