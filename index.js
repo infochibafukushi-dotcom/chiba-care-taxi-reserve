@@ -1,5 +1,5 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzg7goq3dRL1RoHURKpXZakB8cAt76hvTwWqPDThbaAc4Hc8kl2lThZ2nFMbiv9yjJKpA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwY_dn4thR512jFrIKjW28pH5ALOeHmzquOt_Dv608B3lxp-lx-nW0C2nR_5u-K933Liw/exec";
 const ADMIN_PAGE_URL = "admin.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -1067,7 +1067,13 @@ async function updateLogoPreview(){
     }catch(_){}
   }
 
-  if (mainImg) mainImg.src = finalSrc || 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+  if (mainImg) {
+    mainImg.src = finalSrc || 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+    mainImg.onerror = function(){
+      mainImg.onerror = null;
+      mainImg.src = 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+    };
+  }
 }
 
 function escapeHtml(str){
