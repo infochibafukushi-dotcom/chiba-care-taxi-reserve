@@ -1,8 +1,9 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzd65XmVTR-oxl_-qvbVs51S2JCmv_QBN7OS7wlfaaIxp5eCA486C_vnzI7Y07Llgpy/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzg7goq3dRL1RoHURKpXZakB8cAt76hvTwWqPDThbaAc4Hc8kl2lThZ2nFMbiv9yjJKpA/exec";
 const PUBLIC_PAGE_URL = "index.html";
 const ADMIN_AUTH_KEY = "chiba_care_taxi_admin_auth";
 const ADMIN_AUTH_TIME_KEY = "chiba_care_taxi_admin_auth_time";
 const ADMIN_AUTH_MAX_AGE_MS = 1000 * 60 * 60 * 12;
+const FALLBACK_LOGO_URL = "https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png";
 
 function toast(msg='通信エラー', ms=2200){
   const el = document.getElementById('toast');
@@ -120,6 +121,8 @@ const gsRun = async (func, ...args) => {
       data = await _jsonpCall(`${GAS_URL}?action=getMenuKeyCatalog`);
     } else if (func === 'api_getMenuGroupCatalog') {
       data = await _jsonpCall(`${GAS_URL}?action=getMenuGroupCatalog`);
+    } else if (func === 'api_getAutoRuleCatalog') {
+      data = await _jsonpCall(`${GAS_URL}?action=getAutoRuleCatalog`);
     } else if (func === 'api_getDriveImageDataUrl') {
       const fileId = args[0];
       data = await _jsonpCall(`${GAS_URL}?action=getDriveImageDataUrl&fileId=${encodeURIComponent(fileId)}`);
@@ -203,6 +206,7 @@ let config = {};
 let menuMaster = [];
 let menuKeyCatalog = [];
 let menuGroupCatalog = [];
+let autoRuleCatalog = [];
 let adminCalendarDates = [];
 
 const defaultConfig = {
@@ -212,12 +216,20 @@ const defaultConfig = {
   logo_image_url: '',
   logo_drive_file_id: '',
   logo_use_drive_image: '0',
+  logo_use_github_image: '1',
+  logo_github_path: 'logo/logo.png',
+  github_username: '',
+  github_repo: '',
+  github_branch: 'main',
+  github_token: '',
+  github_assets_base_path: '',
   phone_notify_text: '090-6331-4289',
   same_day_enabled: '0',
   same_day_min_hours: '3',
   admin_tap_count: '5',
   max_forward_days: '30',
-  extended_enabled: '1'
+  extended_enabled: '1',
+  admin_panels_collapsed_default: '1'
 };
 
 const defaultMenuGroupCatalog = [
@@ -1034,6 +1046,108 @@ function addMenuAdminRow(){
   bindMenuAdminRowEvents();
 }
 
+function buildAutoRuleGroupOptions(selected){
+  const list = (menuGroupCatalog && menuGroupCatalog.length) ? menuGroupCatalog : defaultMenuGroupCatalog;
+  let html = `<option value="">選択してください</option>`;
+  list.filter(item => item.key !== 'price' && item.key !== 'custom').forEach(item => {
+    html += `<option value="${escapeAttr(item.key)}" ${String(selected || '') === String(item.key) ? 'selected' : ''}>${escapeHtml(item.label)}</option>`;
+  });
+  return html;
+}
+
+function buildAutoRuleKeyOptions(groupKey, selectedKey){
+  const group = String(groupKey || '').trim();
+  let html = `<option value="">選択してください</option>`;
+  if (!group) return html;
+
+  const items = getItemsByGroup(group);
+  items.forEach(item => {
+    html += `<option value="${escapeAttr(item.key || '')}" ${String(selectedKey || '') === String(item.key || '') ? 'selected' : ''}>${escapeHtml((item.key_jp || item.label || item.key || ''))}</option>`;
+  });
+  return html;
+}
+
+function renderAutoRuleList(){
+  const wrap = document.getElementById('autoRuleList');
+  if (!wrap) return;
+
+  let rows = [];
+  for (let i = 1; i <= 6; i++) {
+    const rule = (autoRuleCatalog || []).find(r => Number(r.index) === i) || {
+      index: i,
+      enabled: false,
+      target: '',
+      trigger_key: '',
+      apply_group: '',
+      apply_key: ''
+    };
+    rows.push(rule);
+  }
+
+  wrap.innerHTML = rows.map(rule => `
+    <div class="rule-grid" data-rule-index="${rule.index}">
+      <select class="rule-enabled">
+        <option value="1" ${rule.enabled ? 'selected' : ''}>ON</option>
+        <option value="0" ${!rule.enabled ? 'selected' : ''}>OFF</option>
+      </select>
+
+      <select class="rule-target-group">
+        ${buildAutoRuleGroupOptions(rule.target)}
+      </select>
+
+      <select class="rule-trigger-key">
+        ${buildAutoRuleKeyOptions(rule.target, rule.trigger_key)}
+      </select>
+
+      <select class="rule-apply-group">
+        ${buildAutoRuleGroupOptions(rule.apply_group)}
+      </select>
+
+      <select class="rule-apply-key">
+        ${buildAutoRuleKeyOptions(rule.apply_group, rule.apply_key)}
+      </select>
+    </div>
+  `).join('');
+
+  bindAutoRuleEvents();
+}
+
+function bindAutoRuleEvents(){
+  const rows = Array.from(document.querySelectorAll('#autoRuleList .rule-grid'));
+  rows.forEach(row => {
+    const targetGroup = row.querySelector('.rule-target-group');
+    const triggerKey = row.querySelector('.rule-trigger-key');
+    const applyGroup = row.querySelector('.rule-apply-group');
+    const applyKey = row.querySelector('.rule-apply-key');
+
+    if (targetGroup){
+      targetGroup.addEventListener('change', ()=>{
+        triggerKey.innerHTML = buildAutoRuleKeyOptions(targetGroup.value, '');
+      });
+    }
+
+    if (applyGroup){
+      applyGroup.addEventListener('change', ()=>{
+        applyKey.innerHTML = buildAutoRuleKeyOptions(applyGroup.value, '');
+      });
+    }
+  });
+}
+
+function collectAutoRulePayload(){
+  const rows = Array.from(document.querySelectorAll('#autoRuleList .rule-grid'));
+  const payload = {};
+  rows.forEach(row => {
+    const idx = Number(row.dataset.ruleIndex);
+    payload[`auto_rule_enabled_${idx}`] = row.querySelector('.rule-enabled').value;
+    payload[`auto_rule_target_${idx}`] = row.querySelector('.rule-target-group').value;
+    payload[`auto_rule_trigger_key_${idx}`] = row.querySelector('.rule-trigger-key').value;
+    payload[`auto_rule_apply_group_${idx}`] = row.querySelector('.rule-apply-group').value;
+    payload[`auto_rule_apply_key_${idx}`] = row.querySelector('.rule-apply-key').value;
+  });
+  return payload;
+}
+
 async function refreshData(showToastOnFail=false){
   try{
     const initRes = await gsRun('api_getInitData');
@@ -1044,6 +1158,7 @@ async function refreshData(showToastOnFail=false){
     menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
     menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
     menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
+    autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
     reservations = data.reservations || [];
     const blocks = data.blocks || [];
 
@@ -1052,7 +1167,9 @@ async function refreshData(showToastOnFail=false){
 
     applyConfigToUI();
     renderMenuAdminList();
+    renderAutoRuleList();
     updateStats();
+    applyPanelCollapseDefault();
   }catch(e){
     if (showToastOnFail) toast(e?.message || '通信エラー（データ取得）');
     throw e;
@@ -1067,8 +1184,13 @@ function applyConfigToUI(){
   if (document.getElementById('cfgLogoText')) document.getElementById('cfgLogoText').value = config.logo_text || config.main_title || '';
   if (document.getElementById('cfgLogoSubtext')) document.getElementById('cfgLogoSubtext').value = config.logo_subtext || '';
   if (document.getElementById('cfgLogoImageUrl')) document.getElementById('cfgLogoImageUrl').value = config.logo_image_url || '';
-  if (document.getElementById('cfgLogoDriveFileId')) document.getElementById('cfgLogoDriveFileId').value = config.logo_drive_file_id || '';
-  if (document.getElementById('cfgLogoUseDriveImage')) document.getElementById('cfgLogoUseDriveImage').value = String(config.logo_use_drive_image || '0');
+  if (document.getElementById('cfgLogoUseGithubImage')) document.getElementById('cfgLogoUseGithubImage').value = String(config.logo_use_github_image || '1');
+  if (document.getElementById('cfgGithubUsername')) document.getElementById('cfgGithubUsername').value = config.github_username || '';
+  if (document.getElementById('cfgGithubRepo')) document.getElementById('cfgGithubRepo').value = config.github_repo || '';
+  if (document.getElementById('cfgGithubBranch')) document.getElementById('cfgGithubBranch').value = config.github_branch || 'main';
+  if (document.getElementById('cfgGithubToken')) document.getElementById('cfgGithubToken').value = config.github_token || '';
+  if (document.getElementById('cfgGithubAssetsBasePath')) document.getElementById('cfgGithubAssetsBasePath').value = config.github_assets_base_path || '';
+  if (document.getElementById('cfgLogoGithubPath')) document.getElementById('cfgLogoGithubPath').value = config.logo_github_path || 'logo/logo.png';
   if (document.getElementById('cfgPhoneNotifyText')) document.getElementById('cfgPhoneNotifyText').value = config.phone_notify_text || '';
   if (document.getElementById('cfgSameDayEnabled')) document.getElementById('cfgSameDayEnabled').value = String(config.same_day_enabled || '0');
   if (document.getElementById('cfgSameDayMinHours')) document.getElementById('cfgSameDayMinHours').value = String(config.same_day_min_hours || '3');
@@ -1087,21 +1209,35 @@ async function updateLogoPreview(){
   if (previewText) previewText.textContent = logoText;
   if (previewSubText) previewSubText.textContent = logoSubText;
 
-  let finalSrc = config.logo_image_url || 'https://raw.githubusercontent.com/infochibafukushi-dotcom/chiba-care-taxi-assets/main/logo.png';
+  let finalSrc = FALLBACK_LOGO_URL;
 
+  const logoImageUrl = String(config.logo_image_url || '').trim();
+  const useGithub = String(config.logo_use_github_image || '1') === '1';
   const useDrive = String(config.logo_use_drive_image || '0') === '1';
   const driveFileId = String(config.logo_drive_file_id || '').trim();
 
-  if (useDrive && driveFileId) {
+  if (useGithub && logoImageUrl) {
+    finalSrc = logoImageUrl;
+  } else if (useDrive && driveFileId) {
     try{
       const res = await gsRun('api_getDriveImageDataUrl', driveFileId);
       if (res && res.isOk && res.data && res.data.dataUrl) {
         finalSrc = res.data.dataUrl;
       }
-    }catch(_){}
+    }catch(_){
+      finalSrc = logoImageUrl || FALLBACK_LOGO_URL;
+    }
+  } else if (logoImageUrl) {
+    finalSrc = logoImageUrl;
   }
 
-  if (previewImg) previewImg.src = finalSrc;
+  if (previewImg) {
+    previewImg.src = finalSrc;
+    previewImg.onerror = function(){
+      previewImg.onerror = null;
+      previewImg.src = FALLBACK_LOGO_URL;
+    };
+  }
 }
 
 async function saveLogoConfig(){
@@ -1109,8 +1245,13 @@ async function saveLogoConfig(){
     logo_text: document.getElementById('cfgLogoText').value.trim(),
     logo_subtext: document.getElementById('cfgLogoSubtext').value.trim(),
     logo_image_url: document.getElementById('cfgLogoImageUrl').value.trim(),
-    logo_drive_file_id: document.getElementById('cfgLogoDriveFileId').value.trim(),
-    logo_use_drive_image: document.getElementById('cfgLogoUseDriveImage').value,
+    logo_use_github_image: document.getElementById('cfgLogoUseGithubImage').value,
+    github_username: document.getElementById('cfgGithubUsername').value.trim(),
+    github_repo: document.getElementById('cfgGithubRepo').value.trim(),
+    github_branch: document.getElementById('cfgGithubBranch').value.trim(),
+    github_token: document.getElementById('cfgGithubToken').value.trim(),
+    github_assets_base_path: document.getElementById('cfgGithubAssetsBasePath').value.trim(),
+    logo_github_path: document.getElementById('cfgLogoGithubPath').value.trim(),
     phone_notify_text: document.getElementById('cfgPhoneNotifyText').value.trim(),
     main_title: document.getElementById('cfgLogoText').value.trim()
   };
@@ -1141,6 +1282,14 @@ async function saveMenuMaster(){
     await gsRun('api_saveMenuMaster', items);
     await refreshAllData(true);
     renderCalendar();
+  }, '保存中...');
+}
+
+async function saveAutoRuleConfig(){
+  const payload = collectAutoRulePayload();
+  await withLoading(async ()=>{
+    await gsRun('api_saveConfig', payload);
+    await refreshAllData(true);
   }, '保存中...');
 }
 
@@ -1272,6 +1421,54 @@ function debounce(fn, ms){
   };
 }
 
+function setPanelCollapsed(panelKey, collapsed){
+  const body = document.getElementById(panelKey + 'Body');
+  const toggle = document.querySelector(`[data-panel-toggle="${panelKey}"]`);
+  if (!body || !toggle) return;
+
+  if (collapsed) {
+    body.classList.add('collapsed');
+    toggle.textContent = '+';
+  } else {
+    body.classList.remove('collapsed');
+    toggle.textContent = '−';
+  }
+}
+
+function applyPanelCollapseDefault(){
+  const collapsedDefault = String(config.admin_panels_collapsed_default || '1') === '1';
+  const panels = document.querySelectorAll('[data-panel-key]');
+  panels.forEach(panel => {
+    const key = panel.getAttribute('data-panel-key');
+    setPanelCollapsed(key, collapsedDefault);
+  });
+}
+
+function bindPanelToggle(){
+  document.querySelectorAll('[data-panel-toggle]').forEach(toggle => {
+    toggle.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const key = toggle.getAttribute('data-panel-toggle');
+      const body = document.getElementById(key + 'Body');
+      if (!body) return;
+      const willCollapse = !body.classList.contains('collapsed');
+      setPanelCollapsed(key, willCollapse);
+    });
+  });
+
+  document.querySelectorAll('.admin-panel-header').forEach(header => {
+    header.addEventListener('click', ()=>{
+      const card = header.closest('[data-panel-key]');
+      if (!card) return;
+      const key = card.getAttribute('data-panel-key');
+      const body = document.getElementById(key + 'Body');
+      if (!body) return;
+      const willCollapse = !body.classList.contains('collapsed');
+      setPanelCollapsed(key, willCollapse);
+    });
+  });
+}
+
 async function init(){
   if (!isAdminAuthenticated()){
     document.getElementById('authScreen').classList.remove('hidden');
@@ -1285,6 +1482,7 @@ async function init(){
       try{ await refreshAllData(true); }catch(e){}
       try{ bindGridDelegation(); }catch(e){}
       try{ bindSheetRowClick(); }catch(e){}
+      try{ bindPanelToggle(); }catch(e){}
       try{ renderCalendar(); }catch(e){
         toast('カレンダー描画エラー: ' + (e?.message || e));
       }
@@ -1332,7 +1530,7 @@ async function init(){
   document.getElementById('saveLogoConfigBtn').addEventListener('click', async ()=>{
     try{
       await saveLogoConfig();
-      toast('ロゴ設定を保存しました', 1400);
+      toast('ロゴ・GitHub設定を保存しました', 1400);
     }catch(_){}
   });
 
@@ -1358,29 +1556,48 @@ async function init(){
     }catch(_){}
   });
 
+  document.getElementById('saveAutoRuleConfigBtn').addEventListener('click', async ()=>{
+    try{
+      await saveAutoRuleConfig();
+      toast('自動設定ルールを保存しました', 1400);
+    }catch(_){}
+  });
+
   document.getElementById('addMenuItemBtn').addEventListener('click', ()=>{
     addMenuAdminRow();
   });
 
-  ['cfgLogoText','cfgLogoSubtext','cfgLogoImageUrl','cfgLogoDriveFileId','cfgLogoUseDriveImage'].forEach(id => {
+  [
+    'cfgLogoText',
+    'cfgLogoSubtext',
+    'cfgLogoImageUrl',
+    'cfgLogoUseGithubImage',
+    'cfgGithubUsername',
+    'cfgGithubRepo',
+    'cfgGithubBranch',
+    'cfgGithubToken',
+    'cfgGithubAssetsBasePath',
+    'cfgLogoGithubPath'
+  ].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener('input', async ()=>{
+
+    const syncPreview = async ()=>{
       config.logo_text = document.getElementById('cfgLogoText').value.trim();
       config.logo_subtext = document.getElementById('cfgLogoSubtext').value.trim();
       config.logo_image_url = document.getElementById('cfgLogoImageUrl').value.trim();
-      config.logo_drive_file_id = document.getElementById('cfgLogoDriveFileId').value.trim();
-      config.logo_use_drive_image = document.getElementById('cfgLogoUseDriveImage').value;
+      config.logo_use_github_image = document.getElementById('cfgLogoUseGithubImage').value;
+      config.github_username = document.getElementById('cfgGithubUsername').value.trim();
+      config.github_repo = document.getElementById('cfgGithubRepo').value.trim();
+      config.github_branch = document.getElementById('cfgGithubBranch').value.trim();
+      config.github_token = document.getElementById('cfgGithubToken').value.trim();
+      config.github_assets_base_path = document.getElementById('cfgGithubAssetsBasePath').value.trim();
+      config.logo_github_path = document.getElementById('cfgLogoGithubPath').value.trim();
       await updateLogoPreview();
-    });
-    el.addEventListener('change', async ()=>{
-      config.logo_text = document.getElementById('cfgLogoText').value.trim();
-      config.logo_subtext = document.getElementById('cfgLogoSubtext').value.trim();
-      config.logo_image_url = document.getElementById('cfgLogoImageUrl').value.trim();
-      config.logo_drive_file_id = document.getElementById('cfgLogoDriveFileId').value.trim();
-      config.logo_use_drive_image = document.getElementById('cfgLogoUseDriveImage').value;
-      await updateLogoPreview();
-    });
+    };
+
+    el.addEventListener('input', syncPreview);
+    el.addEventListener('change', syncPreview);
   });
 
   document.getElementById('logoFileInput').addEventListener('change', async ()=>{
