@@ -56,7 +56,45 @@ function applyAdminConfigToForm(){
   document.getElementById('cfgWarningStairBodyAssistText').value = adminConfig.warning_stair_bodyassist_text || '';
   document.getElementById('cfgWarningWheelchairDamageText').value = adminConfig.warning_wheelchair_damage_text || '';
   document.getElementById('cfgWarningStretcherBodyAssistText').value = adminConfig.warning_stretcher_bodyassist_text || '';
+
+  document.getElementById('cfgFormModalTitle').value = adminConfig.form_modal_title || '';
+  document.getElementById('cfgFormPrivacyText').value = adminConfig.form_privacy_text || '';
+  document.getElementById('cfgFormBasicSectionTitle').value = adminConfig.form_basic_section_title || '';
+  document.getElementById('cfgFormBasicSectionBadge').value = adminConfig.form_basic_section_badge || '';
+  document.getElementById('cfgFormOptionalSectionTitle').value = adminConfig.form_optional_section_title || '';
+  document.getElementById('cfgFormOptionalSectionBadge').value = adminConfig.form_optional_section_badge || '';
+  document.getElementById('cfgFormServiceSectionTitle').value = adminConfig.form_service_section_title || '';
+  document.getElementById('cfgFormServiceSectionBadge').value = adminConfig.form_service_section_badge || '';
+  document.getElementById('cfgFormPriceSectionTitle').value = adminConfig.form_price_section_title || '';
+  document.getElementById('cfgFormPriceTotalLabel').value = adminConfig.form_price_total_label || '';
+  document.getElementById('cfgFormPriceNoticeText').value = adminConfig.form_price_notice_text || '';
+  document.getElementById('cfgFormSubmitButtonText').value = adminConfig.form_submit_button_text || '';
+
+  document.getElementById('cfgFormUsageTypeLabel').value = adminConfig.form_usage_type_label || '';
+  document.getElementById('cfgFormUsageTypePlaceholder').value = adminConfig.form_usage_type_placeholder || '';
+  document.getElementById('cfgFormUsageTypeOptionFirst').value = adminConfig.form_usage_type_option_first || '';
+  document.getElementById('cfgFormUsageTypeOptionRepeat').value = adminConfig.form_usage_type_option_repeat || '';
+
+  document.getElementById('cfgFormCustomerNameLabel').value = adminConfig.form_customer_name_label || '';
+  document.getElementById('cfgFormCustomerNamePlaceholder').value = adminConfig.form_customer_name_placeholder || '';
+  document.getElementById('cfgFormPhoneLabel').value = adminConfig.form_phone_label || '';
+  document.getElementById('cfgFormPhonePlaceholder').value = adminConfig.form_phone_placeholder || '';
+  document.getElementById('cfgFormPickupLabel').value = adminConfig.form_pickup_label || '';
+  document.getElementById('cfgFormPickupPlaceholder').value = adminConfig.form_pickup_placeholder || '';
+  document.getElementById('cfgFormDestinationLabel').value = adminConfig.form_destination_label || '';
+  document.getElementById('cfgFormDestinationPlaceholder').value = adminConfig.form_destination_placeholder || '';
+  document.getElementById('cfgFormNotesLabel').value = adminConfig.form_notes_label || '';
+  document.getElementById('cfgFormNotesPlaceholder').value = adminConfig.form_notes_placeholder || '';
+  document.getElementById('cfgFormAssistanceLabel').value = adminConfig.form_assistance_label || '';
+  document.getElementById('cfgFormStairLabel').value = adminConfig.form_stair_label || '';
+  document.getElementById('cfgFormEquipmentLabel').value = adminConfig.form_equipment_label || '';
+  document.getElementById('cfgFormRoundTripLabel').value = adminConfig.form_round_trip_label || '';
+
   document.getElementById('cfgCompleteTitle').value = adminConfig.complete_title || '';
+  document.getElementById('cfgCompleteTitleSub').value = adminConfig.complete_title_sub || '';
+  document.getElementById('cfgCompleteReservationIdLabel').value = adminConfig.complete_reservation_id_label || '';
+  document.getElementById('cfgCompleteCloseButtonText').value = adminConfig.complete_close_button_text || '';
+  document.getElementById('cfgCalendarScrollGuideText').value = adminConfig.calendar_scroll_guide_text || '';
 
   document.getElementById('cfgSameDayEnabled').value = String(adminConfig.same_day_enabled || '0');
   document.getElementById('cfgSameDayMinHours').value = String(adminConfig.same_day_min_hours || '3');
@@ -151,7 +189,45 @@ function collectWarningConfigPayload(){
     warning_stair_bodyassist_text: document.getElementById('cfgWarningStairBodyAssistText').value.trim(),
     warning_wheelchair_damage_text: document.getElementById('cfgWarningWheelchairDamageText').value.trim(),
     warning_stretcher_bodyassist_text: document.getElementById('cfgWarningStretcherBodyAssistText').value.trim(),
-    complete_title: document.getElementById('cfgCompleteTitle').value.trim()
+
+    form_modal_title: document.getElementById('cfgFormModalTitle').value.trim(),
+    form_privacy_text: document.getElementById('cfgFormPrivacyText').value.trim(),
+    form_basic_section_title: document.getElementById('cfgFormBasicSectionTitle').value.trim(),
+    form_basic_section_badge: document.getElementById('cfgFormBasicSectionBadge').value.trim(),
+    form_optional_section_title: document.getElementById('cfgFormOptionalSectionTitle').value.trim(),
+    form_optional_section_badge: document.getElementById('cfgFormOptionalSectionBadge').value.trim(),
+    form_service_section_title: document.getElementById('cfgFormServiceSectionTitle').value.trim(),
+    form_service_section_badge: document.getElementById('cfgFormServiceSectionBadge').value.trim(),
+    form_price_section_title: document.getElementById('cfgFormPriceSectionTitle').value.trim(),
+    form_price_total_label: document.getElementById('cfgFormPriceTotalLabel').value.trim(),
+    form_price_notice_text: document.getElementById('cfgFormPriceNoticeText').value.trim(),
+    form_submit_button_text: document.getElementById('cfgFormSubmitButtonText').value.trim(),
+
+    form_usage_type_label: document.getElementById('cfgFormUsageTypeLabel').value.trim(),
+    form_usage_type_placeholder: document.getElementById('cfgFormUsageTypePlaceholder').value.trim(),
+    form_usage_type_option_first: document.getElementById('cfgFormUsageTypeOptionFirst').value.trim(),
+    form_usage_type_option_repeat: document.getElementById('cfgFormUsageTypeOptionRepeat').value.trim(),
+
+    form_customer_name_label: document.getElementById('cfgFormCustomerNameLabel').value.trim(),
+    form_customer_name_placeholder: document.getElementById('cfgFormCustomerNamePlaceholder').value.trim(),
+    form_phone_label: document.getElementById('cfgFormPhoneLabel').value.trim(),
+    form_phone_placeholder: document.getElementById('cfgFormPhonePlaceholder').value.trim(),
+    form_pickup_label: document.getElementById('cfgFormPickupLabel').value.trim(),
+    form_pickup_placeholder: document.getElementById('cfgFormPickupPlaceholder').value.trim(),
+    form_destination_label: document.getElementById('cfgFormDestinationLabel').value.trim(),
+    form_destination_placeholder: document.getElementById('cfgFormDestinationPlaceholder').value.trim(),
+    form_notes_label: document.getElementById('cfgFormNotesLabel').value.trim(),
+    form_notes_placeholder: document.getElementById('cfgFormNotesPlaceholder').value.trim(),
+    form_assistance_label: document.getElementById('cfgFormAssistanceLabel').value.trim(),
+    form_stair_label: document.getElementById('cfgFormStairLabel').value.trim(),
+    form_equipment_label: document.getElementById('cfgFormEquipmentLabel').value.trim(),
+    form_round_trip_label: document.getElementById('cfgFormRoundTripLabel').value.trim(),
+
+    complete_title: document.getElementById('cfgCompleteTitle').value.trim(),
+    complete_title_sub: document.getElementById('cfgCompleteTitleSub').value.trim(),
+    complete_reservation_id_label: document.getElementById('cfgCompleteReservationIdLabel').value.trim(),
+    complete_close_button_text: document.getElementById('cfgCompleteCloseButtonText').value.trim(),
+    calendar_scroll_guide_text: document.getElementById('cfgCalendarScrollGuideText').value.trim()
   };
 }
 
@@ -314,7 +390,7 @@ function bindUI(){
       await withLoading(async ()=>{
         await gsRun('api_saveConfig', collectWarningConfigPayload());
         await adminRefreshAllData();
-      }, '警告文保存中...');
+      }, '警告文・予約表示文言保存中...');
       toast('保存しました');
     }catch(err){
       toast(err?.message || '保存に失敗しました');
