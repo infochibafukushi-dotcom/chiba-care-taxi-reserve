@@ -166,41 +166,128 @@
     .auth-title{font-size:28px;font-weight:900;color:#0f172a;margin-bottom:6px}
     .auth-sub{font-size:13px;color:#64748b;font-weight:700;margin-bottom:20px}
 
-    .menu-list{display:grid;gap:10px}
-    .menu-card{
-      border:2px solid #e5e7eb;border-radius:16px;background:#fff;padding:12px;
-      display:grid;grid-template-columns: 56px 1fr;gap:12px;align-items:flex-start
+    .menu-group-card{
+      border:2px solid #e5e7eb;
+      border-radius:20px;
+      background:#fff;
+      padding:14px;
+      margin-bottom:16px;
     }
-    .menu-card-left{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start}
+    .menu-group-card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+      padding-bottom:10px;
+      border-bottom:2px solid #f1f5f9;
+    }
+    .menu-group-card-title{
+      font-size:18px;
+      font-weight:900;
+      color:#1f2937;
+    }
+    .menu-group-card-sub{
+      font-size:12px;
+      color:#64748b;
+      font-weight:700;
+      margin-top:4px;
+    }
+    .menu-item-card{
+      border:2px solid #eef2f7;
+      border-radius:18px;
+      background:#f8fafc;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .menu-item-top{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .menu-move-box{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex-shrink:0;
+    }
     .move-btn{
-      width:42px;height:42px;border-radius:12px;font-size:20px;font-weight:900;
-      border:none;cursor:pointer;background:#f3f4f6;color:#374151
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      border:none;
+      background:#ffffff;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+      font-size:20px;
+      font-weight:900;
+      cursor:pointer;
+      color:#334155;
     }
-    .move-btn:hover{background:#e5e7eb}
-    .menu-card-grid{
-      display:grid;grid-template-columns: repeat(4, minmax(0, 1fr));gap:10px
+    .move-btn:hover{
+      background:#f1f5f9;
     }
-    .menu-card-grid-bottom{
-      display:grid;grid-template-columns: 1.2fr .8fr .8fr 1fr;gap:10px;margin-top:10px
+    .menu-item-main{
+      flex:1;
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
     }
-    .menu-card-meta{font-size:11px;font-weight:800;color:#64748b;margin-top:8px;line-height:1.6}
-    .menu-inline-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .menu-item-bottom{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+    .menu-inline-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:10px;
+    }
     .menu-remove-btn{
-      background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);color:#fff
+      background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);
+      color:#fff;
     }
-    .menu-add-box{
-      border:2px dashed #cbd5e1;border-radius:18px;padding:14px;background:#f8fafc
+    .menu-add-row{
+      display:flex;
+      justify-content:flex-end;
+      margin-top:8px;
     }
-
+    .menu-meta{
+      margin-top:8px;
+      font-size:11px;
+      color:#64748b;
+      font-weight:800;
+      line-height:1.6;
+    }
     .rule-grid{display:grid;grid-template-columns: 120px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
     .rule-head{font-size:12px;font-weight:800;color:#6b7280;padding-bottom:8px;border-bottom:2px solid #e5e7eb;margin-bottom:8px}
 
+    @media (max-width: 1100px){
+      .menu-item-main,
+      .menu-item-bottom{
+        grid-template-columns:1fr 1fr;
+      }
+    }
     @media (max-width: 900px){
       .config-grid{grid-template-columns:1fr}
       .rule-grid{grid-template-columns:1fr}
-      .menu-card{grid-template-columns:1fr}
-      .menu-card-left{flex-direction:row;justify-content:flex-start}
-      .menu-card-grid,.menu-card-grid-bottom{grid-template-columns:1fr}
+      .menu-item-top{flex-direction:column}
+      .menu-move-box{flex-direction:row}
+      .menu-item-main,
+      .menu-item-bottom{
+        grid-template-columns:1fr;
+      }
+      .menu-group-card-header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .menu-add-row{
+        justify-content:stretch;
+      }
+      .menu-add-row button{
+        width:100%;
+      }
     }
   </style>
 </head>
@@ -495,27 +582,17 @@
         <div class="admin-panel-body" id="menuPanelBody">
 
           <div class="mb-3">
-            <span class="group-help-chip">① 行追加</span>
-            <span class="group-help-chip">② 出すプルダウン</span>
-            <span class="group-help-chip">③ ↑↓で順番変更</span>
-            <span class="group-help-chip">④ 項目名</span>
-            <span class="group-help-chip">⑤ 価格</span>
-            <span class="group-help-chip">⑥ 自動セット</span>
-            <span class="group-help-chip">⑦ 表示切替</span>
+            <span class="group-help-chip">グループごとに追加・編集・並び替えします</span>
+            <span class="group-help-chip">内部キーは自動生成、通常は非表示扱いです</span>
+            <span class="group-help-chip">↑↓は同じグループ内だけで移動します</span>
           </div>
 
-          <div id="menuAdminList" class="menu-list"></div>
+          <div id="menuAdminList"></div>
 
-          <div class="menu-add-box mt-4">
-            <div class="field-note">新規追加は仮の内部キーを自動作成します。既存項目も保持されます。</div>
-            <div class="mt-3 flex justify-end gap-2">
-              <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
-                行追加
-              </button>
-              <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
-                メニューを保存
-              </button>
-            </div>
+          <div class="mt-4 flex justify-end gap-2">
+            <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
+              メニューを保存
+            </button>
           </div>
 
         </div>
