@@ -243,10 +243,7 @@
       color:#334155;
     }
     .move-btn:hover{background:#f1f5f9}
-    .move-btn:disabled{
-      opacity:.4;
-      cursor:not-allowed;
-    }
+    .move-btn:disabled{opacity:.4;cursor:not-allowed}
     .menu-item-main{
       flex:1;
       display:grid;
@@ -496,14 +493,201 @@
               <textarea id="cfgWarningStretcherBodyAssistText" rows="3"></textarea>
             </div>
             <div class="form-group">
+              <label class="form-label">予約モーダルタイトル</label>
+              <input type="text" id="cfgFormModalTitle" placeholder="ご予約">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">個人情報同意文</label>
+              <textarea id="cfgFormPrivacyText" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">基本情報 見出し</label>
+              <input type="text" id="cfgFormBasicSectionTitle" placeholder="基本情報">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">基本情報 バッジ</label>
+              <input type="text" id="cfgFormBasicSectionBadge" placeholder="必須項目">
+            </div>
+            <div class="form-group">
+              <label class="form-label">追加情報 見出し</label>
+              <input type="text" id="cfgFormOptionalSectionTitle" placeholder="追加情報">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">追加情報 バッジ</label>
+              <input type="text" id="cfgFormOptionalSectionBadge" placeholder="任意項目">
+            </div>
+            <div class="form-group">
+              <label class="form-label">サービス選択 見出し</label>
+              <input type="text" id="cfgFormServiceSectionTitle" placeholder="サービス選択">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">サービス選択 バッジ</label>
+              <input type="text" id="cfgFormServiceSectionBadge" placeholder="必須項目">
+            </div>
+            <div class="form-group">
+              <label class="form-label">料金概算 見出し</label>
+              <input type="text" id="cfgFormPriceSectionTitle" placeholder="料金概算">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">料金概算 合計ラベル</label>
+              <input type="text" id="cfgFormPriceTotalLabel" placeholder="概算合計">
+            </div>
+            <div class="form-group">
+              <label class="form-label">料金案内文</label>
+              <textarea id="cfgFormPriceNoticeText" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">予約ボタン文言</label>
+              <input type="text" id="cfgFormSubmitButtonText" placeholder="予約する">
+            </div>
+            <div class="form-group">
+              <label class="form-label">利用区分 ラベル</label>
+              <input type="text" id="cfgFormUsageTypeLabel" placeholder="ご利用区分">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">利用区分 プレースホルダ</label>
+              <input type="text" id="cfgFormUsageTypePlaceholder" placeholder="選択してください">
+            </div>
+            <div class="form-group">
+              <label class="form-label">利用区分 初回</label>
+              <input type="text" id="cfgFormUsageTypeOptionFirst" placeholder="初めて">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">利用区分 リピーター</label>
+              <input type="text" id="cfgFormUsageTypeOptionRepeat" placeholder="2回目以上">
+            </div>
+            <div class="form-group">
+              <label class="form-label">お名前 ラベル</label>
+              <input type="text" id="cfgFormCustomerNameLabel" placeholder="お名前(カタカナ)">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">お名前 プレースホルダ</label>
+              <input type="text" id="cfgFormCustomerNamePlaceholder" placeholder="ヤマダ タロウ">
+            </div>
+            <div class="form-group">
+              <label class="form-label">電話番号 ラベル</label>
+              <input type="text" id="cfgFormPhoneLabel" placeholder="連絡先(電話番号)">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">電話番号 プレースホルダ</label>
+              <input type="text" id="cfgFormPhonePlaceholder" placeholder="090-1234-5678">
+            </div>
+            <div class="form-group">
+              <label class="form-label">お伺い先 ラベル</label>
+              <input type="text" id="cfgFormPickupLabel" placeholder="お伺い場所または施設名">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">お伺い先 プレースホルダ</label>
+              <input type="text" id="cfgFormPickupPlaceholder" placeholder="東京都渋谷区...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">送迎先 ラベル</label>
+              <input type="text" id="cfgFormDestinationLabel" placeholder="送迎先住所または施設名">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">送迎先 プレースホルダ</label>
+              <input type="text" id="cfgFormDestinationPlaceholder" placeholder="病院、クリニック など">
+            </div>
+            <div class="form-group">
+              <label class="form-label">備考 ラベル</label>
+              <input type="text" id="cfgFormNotesLabel" placeholder="ご要望・備考">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">備考 プレースホルダ</label>
+              <input type="text" id="cfgFormNotesPlaceholder" placeholder="その他ご要望があればご記入ください">
+            </div>
+            <div class="form-group">
+              <label class="form-label">介助内容 ラベル</label>
+              <input type="text" id="cfgFormAssistanceLabel" placeholder="介助内容">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">階段介助 ラベル</label>
+              <input type="text" id="cfgFormStairLabel" placeholder="階段介助">
+            </div>
+            <div class="form-group">
+              <label class="form-label">機材レンタル ラベル</label>
+              <input type="text" id="cfgFormEquipmentLabel" placeholder="機材レンタル">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">往復送迎 ラベル</label>
+              <input type="text" id="cfgFormRoundTripLabel" placeholder="往復送迎">
+            </div>
+            <div class="form-group">
               <label class="form-label">完了画面タイトル</label>
               <input type="text" id="cfgCompleteTitle" placeholder="ご予約ありがとう">
             </div>
           </div>
 
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">完了画面サブタイトル</label>
+              <input type="text" id="cfgCompleteTitleSub" placeholder="ございます">
+            </div>
+            <div class="form-group">
+              <label class="form-label">完了画面 予約IDラベル</label>
+              <input type="text" id="cfgCompleteReservationIdLabel" placeholder="予約ID">
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">完了画面 閉じるボタン</label>
+              <input type="text" id="cfgCompleteCloseButtonText" placeholder="閉じる">
+            </div>
+            <div class="form-group">
+              <label class="form-label">カレンダー スクロール案内</label>
+              <input type="text" id="cfgCalendarScrollGuideText" placeholder="上下・左右にスクロールして、他の日付や時間を確認できます。">
+            </div>
+          </div>
+
           <div class="mt-4 flex justify-end">
             <button id="saveWarningConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white hover:from-fuchsia-600 hover:to-fuchsia-700" type="button">
-              警告文を保存
+              警告文・予約表示文言を保存
             </button>
           </div>
         </div>
