@@ -40,6 +40,11 @@ function normalizeGroupKey(group){
   return MENU_GROUP_ORDER.includes(g) ? g : 'custom';
 }
 
+function normalizeRequiredFlag(value){
+  if (value === true || String(value).toUpperCase() === 'TRUE' || String(value) === '1') return true;
+  return false;
+}
+
 function adminNormalizeMenuRows(){
   return (adminMenuMaster || []).map((item, idx) => {
     const clone = JSON.parse(JSON.stringify(item || {}));
@@ -51,7 +56,7 @@ function adminNormalizeMenuRows(){
     clone.note = String(clone.note || '');
     clone.sort_order = Number(clone.sort_order || ((idx + 1) * 10));
     clone.is_visible = !(clone.is_visible === false || String(clone.is_visible).toUpperCase() === 'FALSE');
-    clone.required_flag = !!clone.required_flag;
+    clone.required_flag = normalizeRequiredFlag(clone.required_flag);
     clone.auto_apply_group = String(clone.auto_apply_group || '');
     clone.auto_apply_key = String(clone.auto_apply_key || '');
     return clone;
@@ -82,7 +87,7 @@ function getGroupDescription(group){
   return '保存のみ';
 }
 
-function renderMenuItemCard(item, idx, groupItems){
+function renderMenuItemCard(item, groupItems){
   const autoOptions = buildMenuAutoApplyOptions(item.auto_apply_group || '', item.auto_apply_key || '');
   const groupIndex = groupItems.findIndex(x => String(x.key || '') === String(item.key || ''));
 
@@ -115,12 +120,20 @@ function renderMenuItemCard(item, idx, groupItems){
             </div>
 
             <div class="form-group">
-              <label class="form-label">説明</label>
-              <input type="text" value="${escapeHtml(item.note || '')}" data-field="note" data-key="${escapeHtml(item.key || '')}" placeholder="補足説明">
+              <label class="form-label">必須 / 任意</label>
+              <select data-field="required_flag" data-key="${escapeHtml(item.key || '')}">
+                <option value="1" ${item.required_flag ? 'selected' : ''}>必須</option>
+                <option value="0" ${!item.required_flag ? 'selected' : ''}>任意</option>
+              </select>
             </div>
           </div>
 
           <div class="menu-item-bottom">
+            <div class="form-group">
+              <label class="form-label">説明</label>
+              <input type="text" value="${escapeHtml(item.note || '')}" data-field="note" data-key="${escapeHtml(item.key || '')}" placeholder="補足説明">
+            </div>
+
             <div class="form-group">
               <label class="form-label">自動セット先</label>
               <select data-field="auto_apply_group" data-key="${escapeHtml(item.key || '')}">
@@ -136,11 +149,6 @@ function renderMenuItemCard(item, idx, groupItems){
             </div>
 
             <div class="form-group">
-              <label class="form-label">内部キー</label>
-              <input type="text" value="${escapeHtml(item.key || '')}" data-field="key" data-key="${escapeHtml(item.key || '')}" placeholder="自動生成">
-            </div>
-
-            <div class="form-group">
               <label class="form-label">現在グループ</label>
               <input type="text" value="${escapeHtml(getAdminGroupLabel(item.menu_group || 'custom'))}" disabled>
             </div>
@@ -149,7 +157,7 @@ function renderMenuItemCard(item, idx, groupItems){
           <div class="menu-meta">
             並び順: <strong>${Number(item.sort_order || 0)}</strong>
             ／ 日本語キー: <strong>${escapeHtml(item.key_jp || item.label || '未設定')}</strong>
-            ／ 内部キーは保存用IDです
+            ／ 保存IDは内部で自動管理します
           </div>
 
           <div class="menu-inline-actions">
@@ -166,22 +174,26 @@ function renderMenuGroupCard(group){
 
   return `
     <div class="menu-group-card" data-menu-group="${escapeHtml(group)}">
-      <div class="menu-group-card-header">
+      <div class="menu-group-card-header" data-action="toggleMenuGroup" data-group="${escapeHtml(group)}">
         <div>
           <div class="menu-group-card-title">${escapeHtml(getAdminGroupLabel(group))}</div>
           <div class="menu-group-card-sub">${escapeHtml(getGroupDescription(group))}</div>
         </div>
+        <div class="menu-group-card-toggle" data-menu-group-toggle="${escapeHtml(group)}">＋</div>
+      </div>
+
+      <div class="menu-group-card-body collapsed" id="menuGroupBody_${escapeHtml(group)}">
+        <div>
+          ${items.length ? items.map(item => renderMenuItemCard(item, items)).join('') : `
+            <div class="text-sm text-slate-500 font-bold py-3">まだ項目がありません</div>
+          `}
+        </div>
+
         <div class="menu-add-row">
           <button class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" data-action="menuAddInGroup" data-group="${escapeHtml(group)}" type="button">
             このグループに追加
           </button>
         </div>
-      </div>
-
-      <div>
-        ${items.length ? items.map(item => renderMenuItemCard(item, 0, items)).join('') : `
-          <div class="text-sm text-slate-500 font-bold py-3">まだ項目がありません</div>
-        `}
       </div>
     </div>
   `;
@@ -253,6 +265,15 @@ function moveMenuItemWithinGroup(key, direction){
   renderMenuAdminList();
 }
 
+function toggleMenuGroup(group){
+  const body = document.getElementById(`menuGroupBody_${group}`);
+  const toggle = document.querySelector(`[data-menu-group-toggle="${group}"]`);
+  if (!body || !toggle) return;
+
+  const collapsed = body.classList.toggle('collapsed');
+  toggle.textContent = collapsed ? '＋' : '−';
+}
+
 function bindMenuEvents(){
   const wrap = document.getElementById('menuAdminList');
   if (!wrap) return;
@@ -265,8 +286,15 @@ function bindMenuEvents(){
     const key = String(btn.dataset.key || '');
     const group = String(btn.dataset.group || '');
 
+    if (action === 'toggleMenuGroup'){
+      toggleMenuGroup(group);
+      return;
+    }
+
     if (action === 'menuAddInGroup'){
       addMenuItemToGroup(group);
+      toggleMenuGroup(group);
+      toggleMenuGroup(group);
       return;
     }
 
@@ -299,8 +327,6 @@ function bindMenuEvents(){
 
     if (field === 'price'){
       adminMenuMaster[idx][field] = Number(el.value || 0);
-    } else if (field === 'key'){
-      adminMenuMaster[idx][field] = String(el.value || '').trim();
     } else {
       adminMenuMaster[idx][field] = el.value;
     }
@@ -321,6 +347,8 @@ function bindMenuEvents(){
     if (idx < 0 || !field) return;
 
     if (field === 'is_visible'){
+      adminMenuMaster[idx][field] = String(el.value) === '1';
+    } else if (field === 'required_flag'){
       adminMenuMaster[idx][field] = String(el.value) === '1';
     } else {
       adminMenuMaster[idx][field] = el.value;
@@ -356,7 +384,7 @@ function buildSaveMenuPayload(){
       is_visible: !(item.is_visible === false || String(item.is_visible).toUpperCase() === 'FALSE'),
       sort_order: Number(item.sort_order || ((idx + 1) * 10)),
       menu_group: group,
-      required_flag: false,
+      required_flag: !!item.required_flag,
       auto_apply_group: String(item.auto_apply_group || '').trim(),
       auto_apply_key: String(item.auto_apply_key || '').trim()
     };
