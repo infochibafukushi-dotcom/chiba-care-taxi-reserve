@@ -20,88 +20,61 @@
     .gradient-header{background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:25px;padding:24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(16,185,129,.2)}
     .gradient-header-pink{background:linear-gradient(135deg,#ec4899 0%,#db2777 100%);border-radius:25px;padding:24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(236,72,153,.2)}
 
-    .calendar-grid{
-      display:grid;
-      gap:6px;
-      width:max-content;
-    }
-    .calendar-grid > div{ min-width:0; }
-
+    .calendar-grid{display:grid;gap:6px;width:max-content}
+    .calendar-grid > div{min-width:0}
     .time-label{
       background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);
       border:2px solid #d1d5db;
       display:flex;align-items:center;justify-content:center;
       font-weight:700;font-size:13px;color:#1f2937;
-      border-radius:8px;min-height:50px;
-      white-space:nowrap;
-      user-select:none;
+      border-radius:8px;min-height:50px;white-space:nowrap;user-select:none
     }
     .date-header{
       background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);
       border:2px solid #d1d5db;
       display:flex;align-items:center;justify-content:center;
       font-weight:700;font-size:13px;color:#1f2937;
-      border-radius:8px;min-height:50px;
-      transition:all .3s;
-      white-space:nowrap;
-      user-select:none;
+      border-radius:8px;min-height:50px;transition:all .3s;white-space:nowrap;user-select:none
     }
     .date-header.weekend{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);border-color:#fca5a5}
-
     .admin-slot-available{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;cursor:pointer;border-radius:12px;transition:all .3s;font-weight:800}
     .admin-slot-available:hover{transform:scale(1.05)}
     .admin-slot-unavailable{background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);color:#fff;cursor:pointer;border-radius:12px;font-weight:800}
+    .admin-slot-other{background:linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);color:#fff;cursor:pointer;border-radius:12px;font-weight:800}
+    .admin-slot-other:hover{transform:scale(1.05)}
 
-    .scroll-container{
-      overflow:auto;
-      -webkit-overflow-scrolling:touch;
-      position:relative;
-      width:100%;
-      overscroll-behavior:contain;
-      scroll-behavior:smooth;
-    }
-
-    .admin-calendar-scroll{ max-height:500px; }
+    .scroll-container{overflow:auto;-webkit-overflow-scrolling:touch;position:relative;width:100%;overscroll-behavior:contain;scroll-behavior:smooth}
+    .admin-calendar-scroll{max-height:500px}
     @media (min-width: 641px){
-      #adminView .admin-calendar-scroll{ max-height: calc(100vh - 320px); }
+      #adminView .admin-calendar-scroll{max-height:calc(100vh - 320px)}
     }
 
-    .sticky-top{ position: sticky; top: 0; z-index: 30; }
-    .sticky-left{ position: sticky; left: 0; z-index: 20; }
-    .sticky-corner{ position: sticky; top: 0; left: 0; z-index: 40; }
+    .sticky-top{position:sticky;top:0;z-index:30}
+    .sticky-left{position:sticky;left:0;z-index:20}
+    .sticky-corner{position:sticky;top:0;left:0;z-index:40}
 
     .day-btn{
       display:inline-flex;align-items:center;justify-content:center;
-      width:34px;height:22px;border-radius:999px;
+      width:36px;height:24px;border-radius:999px;
       font-weight:900;font-size:12px;line-height:1;
       border:2px solid rgba(0,0,0,.08);
       box-shadow:0 6px 14px rgba(0,0,0,.08);
       transition:all .25s cubic-bezier(.34,1.56,.64,1);
-      user-select:none;
+      user-select:none
     }
     .day-btn:hover{transform:translateY(-1px) scale(1.05)}
     .day-btn:active{transform:translateY(0) scale(1.02)}
     .day-btn-block{background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);color:#fff}
     .day-btn-unblock{background:linear-gradient(135deg,#34d399 0%,#10b981 100%);color:#fff}
-
-    .card-zero{padding:0 !important;}
-    .card-zero-inner{padding:0 !important;margin:0 !important;}
-
-    .warning-text{color:#dc2626;font-size:13px;font-weight:700;animation:slideDown .3s ease-out}
-    @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .card-zero{padding:0 !important}
+    .card-zero-inner{padding:0 !important;margin:0 !important}
 
     input,select,textarea{
-      font-size:16px!important;
-      border-radius:12px!important;
-      border:2px solid #e5e7eb!important;
-      padding:12px 16px!important;
-      transition:all .3s;
-      font-family:'Noto Sans JP',sans-serif
+      font-size:16px!important;border-radius:12px!important;border:2px solid #e5e7eb!important;
+      padding:12px 16px!important;transition:all .3s;font-family:'Noto Sans JP',sans-serif
     }
     input:focus,select:focus,textarea:focus{
-      outline:none;
-      border-color:#10b981!important;
-      box-shadow:0 0 0 3px rgba(16,185,129,.1)!important
+      outline:none;border-color:#10b981!important;box-shadow:0 0 0 3px rgba(16,185,129,.1)!important
     }
 
     .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .3s ease-out}
@@ -111,8 +84,6 @@
 
     .form-group{margin-bottom:0}
     .form-label{display:block;font-size:14px;font-weight:800;color:#333;margin-bottom:10px;letter-spacing:.3px}
-    .required{color:#ec4899;margin-left:2px}
-
     .badge{display:inline-block;padding:6px 12px;border-radius:12px;font-size:12px;font-weight:800;letter-spacing:.5px}
     .badge-pending{background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 100%);color:#fff}
     .badge-confirmed{background:linear-gradient(135deg,#60a5fa 0%,#3b82f6 100%);color:#fff}
@@ -131,273 +102,105 @@
 
     #loadingOverlay{
       position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      background:rgba(255,255,255,.68);
-      z-index:2100;
-      backdrop-filter: blur(6px);
+      background:rgba(255,255,255,.68);z-index:2100;backdrop-filter: blur(6px)
     }
     #loadingCard{
-      background:rgba(17,24,39,.92);
-      color:#fff;
-      padding:14px 16px;
-      border-radius:999px;
-      box-shadow:0 14px 35px rgba(0,0,0,.25);
-      display:flex;align-items:center;gap:10px;
-      font-weight:800;
-      font-size:13px;
+      background:rgba(17,24,39,.92);color:#fff;padding:14px 16px;border-radius:999px;
+      box-shadow:0 14px 35px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px
     }
     .spinner{
-      width:18px;height:18px;border-radius:999px;
-      border:3px solid rgba(255,255,255,.25);
-      border-top-color: rgba(255,255,255,.95);
-      animation:spin .8s linear infinite;
+      width:18px;height:18px;border-radius:999px;border:3px solid rgba(255,255,255,.25);
+      border-top-color: rgba(255,255,255,.95);animation:spin .8s linear infinite
     }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    #adminView{
-      height: 100%;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-
+    #adminView{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
     @media (max-width: 640px){
-      .time-label,.date-header{
-        min-height:34px;
-        font-size:10px;
-        border-width:1px;
-        border-radius:8px;
-        padding:0 2px;
-      }
-
-      .admin-slot-available,.admin-slot-unavailable{
-        font-size:14px !important;
-        line-height:1 !important;
-      }
-
-      #adminView .scroll-container{ max-height: calc(100vh - 210px) !important; }
+      .time-label,.date-header{min-height:34px;font-size:10px;border-width:1px;border-radius:8px;padding:0 2px}
+      .admin-slot-available,.admin-slot-unavailable,.admin-slot-other{font-size:14px !important;line-height:1 !important}
+      #adminView .scroll-container{max-height:calc(100vh - 210px) !important}
       .day-btn{width:30px;height:18px;font-size:10px}
-      #adminView{padding:0 !important;}
-      #adminHeader{margin-bottom:10px !important;}
-      .stat-box{ padding:8px !important; border-radius:12px !important; }
-      .stat-number{ font-size:18px !important; }
-      .stat-label{ font-size:10px !important; margin-top:2px !important; }
+      #adminView{padding:0 !important}
+      #adminHeader{margin-bottom:10px !important}
+      .stat-box{padding:8px !important;border-radius:12px !important}
+      .stat-number{font-size:18px !important}
+      .stat-label{font-size:10px !important;margin-top:2px !important}
     }
 
-    .sheet-row-clickable{ cursor:pointer; }
-    .sheet-row-clickable:hover{ background:#f0f9ff !important; }
-
-    .hidden{
-      display:none !important;
-    }
+    .sheet-row-clickable{cursor:pointer}
+    .sheet-row-clickable:hover{background:#f0f9ff !important}
+    .hidden{display:none !important}
 
     .admin-panel-card{
-      border-radius:20px;
-      background:rgba(255,255,255,.95);
-      box-shadow:0 8px 32px rgba(0,0,0,.08);
-      border:1px solid rgba(255,255,255,.5);
-      padding:16px;
-      margin-bottom:16px;
+      border-radius:20px;background:rgba(255,255,255,.95);box-shadow:0 8px 32px rgba(0,0,0,.08);
+      border:1px solid rgba(255,255,255,.5);padding:16px;margin-bottom:16px
     }
-
-    .admin-panel-title{
-      font-size:18px;
-      font-weight:800;
-      color:#1f2937;
-      margin-bottom:0;
-    }
-
-    .admin-panel-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      cursor:pointer;
-      user-select:none;
-      padding:4px 0;
-    }
-
+    .admin-panel-title{font-size:18px;font-weight:800;color:#1f2937;margin-bottom:0}
+    .admin-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;padding:4px 0}
     .admin-panel-toggle{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:36px;
-      height:36px;
-      border-radius:999px;
-      background:#f3f4f6;
-      color:#374151;
-      font-size:18px;
-      font-weight:900;
-      flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:999px;
+      background:#f3f4f6;color:#374151;font-size:18px;font-weight:900;flex-shrink:0
     }
+    .admin-panel-body{margin-top:14px}
+    .admin-panel-body.collapsed{display:none}
 
-    .admin-panel-body{
-      margin-top:14px;
-    }
-
-    .admin-panel-body.collapsed{
-      display:none;
-    }
-
-    .menu-admin-row{
-      display:grid;
-      grid-template-columns: 180px 220px 170px 1fr 120px 1fr 110px 110px;
-      gap:10px;
-      align-items:center;
-      padding:10px 0;
-      border-bottom:1px solid #e5e7eb;
-    }
-
-    .menu-admin-row:last-child{
-      border-bottom:none;
-    }
-
-    .menu-admin-head{
-      font-size:12px;
-      font-weight:800;
-      color:#6b7280;
-      text-transform:none;
-      padding-bottom:8px;
-      border-bottom:2px solid #e5e7eb;
-      margin-bottom:8px;
-    }
-
-    .logo-preview-wrap{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:12px;
-      border:2px solid #e5e7eb;
-      border-radius:16px;
-      background:#fff;
-    }
-
-    .logo-preview-img{
-      width:64px;
-      height:64px;
-      object-fit:contain;
-      border-radius:14px;
-      background:#f9fafb;
-      border:1px solid #e5e7eb;
-      flex-shrink:0;
-    }
-
-    .config-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:14px;
-    }
-
-    .config-grid-1{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-    }
-
-    .field-note{
-      font-size:12px;
-      color:#6b7280;
-      line-height:1.5;
-      margin-top:6px;
-      font-weight:700;
-    }
-
-    .upload-box{
-      border:2px dashed #cbd5e1;
-      border-radius:16px;
-      padding:14px;
-      background:#f8fafc;
-    }
-
-    .small-status{
-      font-size:12px;
-      font-weight:800;
-      margin-top:8px;
-    }
-
-    .small-status.ok{
-      color:#059669;
-    }
-
-    .small-status.ng{
-      color:#dc2626;
-    }
-
+    .logo-preview-wrap{display:flex;align-items:center;gap:12px;padding:12px;border:2px solid #e5e7eb;border-radius:16px;background:#fff}
+    .logo-preview-img{width:64px;height:64px;object-fit:contain;border-radius:14px;background:#f9fafb;border:1px solid #e5e7eb;flex-shrink:0}
+    .config-grid{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:14px}
+    .config-grid-1{display:grid;grid-template-columns:1fr;gap:14px}
+    .field-note{font-size:12px;color:#6b7280;line-height:1.5;margin-top:6px;font-weight:700}
+    .upload-box{border:2px dashed #cbd5e1;border-radius:16px;padding:14px;background:#f8fafc}
+    .small-status{font-size:12px;font-weight:800;margin-top:8px}
+    .small-status.ok{color:#059669}
+    .small-status.ng{color:#dc2626}
     .group-help-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:#f3f4f6;
-      color:#4b5563;
-      font-size:11px;
-      font-weight:800;
-      margin-right:6px;
-      margin-bottom:6px;
+      display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#f3f4f6;
+      color:#4b5563;font-size:11px;font-weight:800;margin-right:6px;margin-bottom:6px
     }
 
-    .auth-screen{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
-
+    .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
     .auth-card{
-      width:100%;
-      max-width:460px;
-      background:rgba(255,255,255,.95);
-      border:1px solid rgba(255,255,255,.5);
-      border-radius:28px;
-      box-shadow:0 18px 45px rgba(0,0,0,.12);
-      padding:28px;
-      text-align:center;
+      width:100%;max-width:460px;background:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.5);
+      border-radius:28px;box-shadow:0 18px 45px rgba(0,0,0,.12);padding:28px;text-align:center
+    }
+    .auth-title{font-size:28px;font-weight:900;color:#0f172a;margin-bottom:6px}
+    .auth-sub{font-size:13px;color:#64748b;font-weight:700;margin-bottom:20px}
+
+    .menu-list{display:grid;gap:10px}
+    .menu-card{
+      border:2px solid #e5e7eb;border-radius:16px;background:#fff;padding:12px;
+      display:grid;grid-template-columns: 56px 1fr;gap:12px;align-items:flex-start
+    }
+    .menu-card-left{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start}
+    .move-btn{
+      width:42px;height:42px;border-radius:12px;font-size:20px;font-weight:900;
+      border:none;cursor:pointer;background:#f3f4f6;color:#374151
+    }
+    .move-btn:hover{background:#e5e7eb}
+    .menu-card-grid{
+      display:grid;grid-template-columns: repeat(4, minmax(0, 1fr));gap:10px
+    }
+    .menu-card-grid-bottom{
+      display:grid;grid-template-columns: 1.2fr .8fr .8fr 1fr;gap:10px;margin-top:10px
+    }
+    .menu-card-meta{font-size:11px;font-weight:800;color:#64748b;margin-top:8px;line-height:1.6}
+    .menu-inline-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .menu-remove-btn{
+      background:linear-gradient(135deg,#f87171 0%,#ef4444 100%);color:#fff
+    }
+    .menu-add-box{
+      border:2px dashed #cbd5e1;border-radius:18px;padding:14px;background:#f8fafc
     }
 
-    .auth-title{
-      font-size:28px;
-      font-weight:900;
-      color:#0f172a;
-      margin-bottom:6px;
-    }
-
-    .auth-sub{
-      font-size:13px;
-      color:#64748b;
-      font-weight:700;
-      margin-bottom:20px;
-    }
-
-    .rule-grid{
-      display:grid;
-      grid-template-columns: 120px 1fr 1fr 1fr 1fr;
-      gap:10px;
-      align-items:center;
-      padding:10px 0;
-      border-bottom:1px solid #e5e7eb;
-    }
-
-    .rule-head{
-      font-size:12px;
-      font-weight:800;
-      color:#6b7280;
-      padding-bottom:8px;
-      border-bottom:2px solid #e5e7eb;
-      margin-bottom:8px;
-    }
+    .rule-grid{display:grid;grid-template-columns: 120px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
+    .rule-head{font-size:12px;font-weight:800;color:#6b7280;padding-bottom:8px;border-bottom:2px solid #e5e7eb;margin-bottom:8px}
 
     @media (max-width: 900px){
-      .menu-admin-row{
-        grid-template-columns: 1fr;
-        gap:8px;
-      }
-      .config-grid{
-        grid-template-columns: 1fr;
-      }
-      .rule-grid{
-        grid-template-columns: 1fr;
-      }
+      .config-grid{grid-template-columns:1fr}
+      .rule-grid{grid-template-columns:1fr}
+      .menu-card{grid-template-columns:1fr}
+      .menu-card-left{flex-direction:row;justify-content:flex-start}
+      .menu-card-grid,.menu-card-grid-bottom{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -506,7 +309,6 @@
             <div class="form-group">
               <label class="form-label">GitHub保存ベースパス</label>
               <input type="text" id="cfgGithubAssetsBasePath" placeholder="assets など">
-              <div class="field-note">空でも可。例: assets</div>
             </div>
           </div>
 
@@ -514,12 +316,10 @@
             <div class="form-group">
               <label class="form-label">ロゴ保存パス</label>
               <input type="text" id="cfgLogoGithubPath" placeholder="logo/logo.png">
-              <div class="field-note">例: logo/logo.png</div>
             </div>
             <div class="form-group">
               <label class="form-label">GitHub Personal Access Token</label>
               <input type="password" id="cfgGithubToken" placeholder="ghp_...">
-              <div class="field-note">保存後もそのまま利用されます</div>
             </div>
           </div>
 
@@ -566,6 +366,42 @@
             </button>
           </div>
 
+        </div>
+      </div>
+
+      <div class="admin-panel-card" data-panel-key="warningPanel">
+        <div class="admin-panel-header">
+          <div class="admin-panel-title">警告文・予約表示文言</div>
+          <div class="admin-panel-toggle" data-panel-toggle="warningPanel">−</div>
+        </div>
+        <div class="admin-panel-body" id="warningPanelBody">
+          <div class="config-grid">
+            <div class="form-group">
+              <label class="form-label">階段介助で身体介助を自動セット時の警告文</label>
+              <textarea id="cfgWarningStairBodyAssistText" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">持込車いす時の警告文</label>
+              <textarea id="cfgWarningWheelchairDamageText" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="config-grid mt-4">
+            <div class="form-group">
+              <label class="form-label">ストレッチャー時の警告文</label>
+              <textarea id="cfgWarningStretcherBodyAssistText" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">完了画面タイトル</label>
+              <input type="text" id="cfgCompleteTitle" placeholder="ご予約ありがとう">
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <button id="saveWarningConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white hover:from-fuchsia-600 hover:to-fuchsia-700" type="button">
+              警告文を保存
+            </button>
+          </div>
         </div>
       </div>
 
@@ -659,64 +495,27 @@
         <div class="admin-panel-body" id="menuPanelBody">
 
           <div class="mb-3">
-            <span class="group-help-chip">料金概算（基本料金）= 料金概算だけに使う</span>
-            <span class="group-help-chip">介助内容 = 介助内容プルダウン</span>
-            <span class="group-help-chip">階段介助 = 階段介助プルダウン</span>
-            <span class="group-help-chip">機材レンタル = 機材レンタルプルダウン</span>
-            <span class="group-help-chip">往復送迎 = 往復送迎プルダウン</span>
-            <span class="group-help-chip">その他 = 保存のみ</span>
+            <span class="group-help-chip">① 行追加</span>
+            <span class="group-help-chip">② 出すプルダウン</span>
+            <span class="group-help-chip">③ ↑↓で順番変更</span>
+            <span class="group-help-chip">④ 項目名</span>
+            <span class="group-help-chip">⑤ 価格</span>
+            <span class="group-help-chip">⑥ 自動セット</span>
+            <span class="group-help-chip">⑦ 表示切替</span>
           </div>
 
-          <div class="menu-admin-head menu-admin-row">
-            <div>日本語キー</div>
-            <div>どのプルダウンに出すか</div>
-            <div>内部キー</div>
-            <div>表示名</div>
-            <div>金額</div>
-            <div>説明</div>
-            <div>表示</div>
-            <div>並び順</div>
-          </div>
+          <div id="menuAdminList" class="menu-list"></div>
 
-          <div id="menuAdminList"></div>
-
-          <div class="mt-4 flex justify-end gap-2">
-            <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
-              行追加
-            </button>
-            <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
-              メニューを保存
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="admin-panel-card" data-panel-key="rulePanel">
-        <div class="admin-panel-header">
-          <div class="admin-panel-title">自動設定ルール</div>
-          <div class="admin-panel-toggle" data-panel-toggle="rulePanel">−</div>
-        </div>
-        <div class="admin-panel-body" id="rulePanelBody">
-
-          <div class="field-note mb-3">
-            どの選択をした時に、どの項目を自動で追加するかを設定します。
-          </div>
-
-          <div class="rule-head rule-grid">
-            <div>有効</div>
-            <div>対象プルダウン</div>
-            <div>対象キー</div>
-            <div>追加先プルダウン</div>
-            <div>追加キー</div>
-          </div>
-
-          <div id="autoRuleList"></div>
-
-          <div class="mt-4 flex justify-end">
-            <button id="saveAutoRuleConfigBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white hover:from-fuchsia-600 hover:to-fuchsia-700" type="button">
-              自動設定ルールを保存
-            </button>
+          <div class="menu-add-box mt-4">
+            <div class="field-note">新規追加は仮の内部キーを自動作成します。既存項目も保持されます。</div>
+            <div class="mt-3 flex justify-end gap-2">
+              <button id="addMenuItemBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700" type="button">
+                行追加
+              </button>
+              <button id="saveMenuMasterBtn" class="cute-btn px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700" type="button">
+                メニューを保存
+              </button>
+            </div>
           </div>
 
         </div>
@@ -726,6 +525,13 @@
         <div class="px-3 py-2 border-b border-gray-100">
           <div class="flex items-center justify-between gap-2">
             <span id="adminDateRange" class="text-sm md:text-lg font-bold text-gray-800 leading-tight"></span>
+            <div class="flex items-center gap-2">
+              <button id="toggleAdminTimeView" class="cute-btn px-3 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 text-xs md:text-sm whitespace-nowrap" type="button">
+                時間外表示
+              </button>
+            </div>
+          </div>
+          <div class="mt-2 flex items-center justify-between gap-2">
             <div class="text-[11px] text-gray-500 font-bold text-right leading-tight">
               上下・左右にスクロールして、他の日付や時間を確認できます。
             </div>
@@ -802,7 +608,8 @@
   </div>
 
   <script src="./admin.api.js"></script>
-  <script src="./admin.ui.js"></script>
   <script src="./admin.calendar.js"></script>
+  <script src="./admin.menu.js"></script>
+  <script src="./admin.app.js"></script>
 </body>
 </html>
