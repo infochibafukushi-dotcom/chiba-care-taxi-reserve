@@ -368,10 +368,6 @@ function bindUI(){
     }
   });
 
-  document.getElementById('addMenuItemBtn').addEventListener('click', ()=>{
-    addMenuItemRow();
-  });
-
   document.getElementById('saveMenuMasterBtn').addEventListener('click', async ()=>{
     try{
       const items = buildSaveMenuPayload();
