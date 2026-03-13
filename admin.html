@@ -147,7 +147,6 @@
     .logo-preview-wrap{display:flex;align-items:center;gap:12px;padding:12px;border:2px solid #e5e7eb;border-radius:16px;background:#fff}
     .logo-preview-img{width:64px;height:64px;object-fit:contain;border-radius:14px;background:#f9fafb;border:1px solid #e5e7eb;flex-shrink:0}
     .config-grid{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:14px}
-    .config-grid-1{display:grid;grid-template-columns:1fr;gap:14px}
     .field-note{font-size:12px;color:#6b7280;line-height:1.5;margin-top:6px;font-weight:700}
     .upload-box{border:2px dashed #cbd5e1;border-radius:16px;padding:14px;background:#f8fafc}
     .small-status{font-size:12px;font-weight:800;margin-top:8px}
@@ -177,10 +176,9 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
-      padding-bottom:10px;
-      border-bottom:2px solid #f1f5f9;
+      gap:12px;
+      cursor:pointer;
+      user-select:none;
     }
     .menu-group-card-title{
       font-size:18px;
@@ -192,6 +190,27 @@
       color:#64748b;
       font-weight:700;
       margin-top:4px;
+    }
+    .menu-group-card-toggle{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#374151;
+      font-size:18px;
+      font-weight:900;
+      flex-shrink:0;
+    }
+    .menu-group-card-body{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:2px solid #f1f5f9;
+    }
+    .menu-group-card-body.collapsed{
+      display:none;
     }
     .menu-item-card{
       border:2px solid #eef2f7;
@@ -223,8 +242,10 @@
       cursor:pointer;
       color:#334155;
     }
-    .move-btn:hover{
-      background:#f1f5f9;
+    .move-btn:hover{background:#f1f5f9}
+    .move-btn:disabled{
+      opacity:.4;
+      cursor:not-allowed;
     }
     .menu-item-main{
       flex:1;
@@ -260,8 +281,6 @@
       font-weight:800;
       line-height:1.6;
     }
-    .rule-grid{display:grid;grid-template-columns: 120px 1fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb}
-    .rule-head{font-size:12px;font-weight:800;color:#6b7280;padding-bottom:8px;border-bottom:2px solid #e5e7eb;margin-bottom:8px}
 
     @media (max-width: 1100px){
       .menu-item-main,
@@ -271,7 +290,6 @@
     }
     @media (max-width: 900px){
       .config-grid{grid-template-columns:1fr}
-      .rule-grid{grid-template-columns:1fr}
       .menu-item-top{flex-direction:column}
       .menu-move-box{flex-direction:row}
       .menu-item-main,
@@ -279,7 +297,6 @@
         grid-template-columns:1fr;
       }
       .menu-group-card-header{
-        flex-direction:column;
         align-items:flex-start;
       }
       .menu-add-row{
@@ -347,9 +364,9 @@
       <div class="admin-panel-card" data-panel-key="logoPanel">
         <div class="admin-panel-header">
           <div class="admin-panel-title">ロゴ・GitHub接続・表示設定</div>
-          <div class="admin-panel-toggle" data-panel-toggle="logoPanel">−</div>
+          <div class="admin-panel-toggle" data-panel-toggle="logoPanel">＋</div>
         </div>
-        <div class="admin-panel-body" id="logoPanelBody">
+        <div class="admin-panel-body collapsed" id="logoPanelBody">
 
           <div class="config-grid">
             <div class="form-group">
@@ -459,9 +476,9 @@
       <div class="admin-panel-card" data-panel-key="warningPanel">
         <div class="admin-panel-header">
           <div class="admin-panel-title">警告文・予約表示文言</div>
-          <div class="admin-panel-toggle" data-panel-toggle="warningPanel">−</div>
+          <div class="admin-panel-toggle" data-panel-toggle="warningPanel">＋</div>
         </div>
-        <div class="admin-panel-body" id="warningPanelBody">
+        <div class="admin-panel-body collapsed" id="warningPanelBody">
           <div class="config-grid">
             <div class="form-group">
               <label class="form-label">階段介助で身体介助を自動セット時の警告文</label>
@@ -495,9 +512,9 @@
       <div class="admin-panel-card" data-panel-key="passwordPanel">
         <div class="admin-panel-header">
           <div class="admin-panel-title">管理画面パスワード変更</div>
-          <div class="admin-panel-toggle" data-panel-toggle="passwordPanel">−</div>
+          <div class="admin-panel-toggle" data-panel-toggle="passwordPanel">＋</div>
         </div>
-        <div class="admin-panel-body" id="passwordPanelBody">
+        <div class="admin-panel-body collapsed" id="passwordPanelBody">
 
           <div class="config-grid">
             <div class="form-group">
@@ -536,9 +553,9 @@
       <div class="admin-panel-card" data-panel-key="dayPanel">
         <div class="admin-panel-header">
           <div class="admin-panel-title">当日予約設定</div>
-          <div class="admin-panel-toggle" data-panel-toggle="dayPanel">−</div>
+          <div class="admin-panel-toggle" data-panel-toggle="dayPanel">＋</div>
         </div>
-        <div class="admin-panel-body" id="dayPanelBody">
+        <div class="admin-panel-body collapsed" id="dayPanelBody">
 
           <div class="config-grid">
             <div class="form-group">
@@ -577,14 +594,14 @@
       <div class="admin-panel-card" data-panel-key="menuPanel">
         <div class="admin-panel-header">
           <div class="admin-panel-title">メニュー・料金管理</div>
-          <div class="admin-panel-toggle" data-panel-toggle="menuPanel">−</div>
+          <div class="admin-panel-toggle" data-panel-toggle="menuPanel">＋</div>
         </div>
-        <div class="admin-panel-body" id="menuPanelBody">
+        <div class="admin-panel-body collapsed" id="menuPanelBody">
 
           <div class="mb-3">
-            <span class="group-help-chip">グループごとに追加・編集・並び替えします</span>
-            <span class="group-help-chip">内部キーは自動生成、通常は非表示扱いです</span>
-            <span class="group-help-chip">↑↓は同じグループ内だけで移動します</span>
+            <span class="group-help-chip">各プルダウンごとに追加・編集・並び替えします</span>
+            <span class="group-help-chip">内部キーは非表示です</span>
+            <span class="group-help-chip">必須 / 任意も選択できます</span>
           </div>
 
           <div id="menuAdminList"></div>
