@@ -1,7 +1,6 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzrwIdc_qyVqSPpd8mlmC2OtmjVb0w-0rp_McUqFRQcI7gRe6RdAdDqfdSr4LipKUYLLg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycby1DMJIAMChmBORN_zG9Qhu2NKRTXTzrOBvKaY2VsBCGa6OQj2ws8TfW1wCVwyqa4o-Ug/exec";
 const ADMIN_PAGE_URL = "admin.html";
-const TRIGGER_URL = 'https://script.google.com/macros/s/AKfycbxzM8EPlE-1hwHx6qwh4Q1jXgYa0nyc3_WtK0NYbYbcm5JExMJOi1zzjQocUhsoCuUQ/exec?secret=secret1';
 
 function toast(msg='通信エラー', ms=2200){
   const el = document.getElementById('toast');
@@ -35,20 +34,6 @@ async function withLoading(fn, text){
   }finally{
     showLoading(false);
   }
-}
-
-function sleep(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function fireTrigger(){
-  try{
-    if (!TRIGGER_URL) return;
-    const sep = TRIGGER_URL.includes('?') ? '&' : '?';
-    const url = TRIGGER_URL + sep + 't=' + Date.now();
-    const img = new Image();
-    img.src = url;
-  }catch(_){}
 }
 
 function _jsonpCall(url, timeoutMs = 20000){
@@ -101,7 +86,7 @@ async function _jsonpCallWithRetry(url, retryCount = 1, timeoutMs = 20000){
     }catch(err){
       lastError = err;
       if (i < retryCount){
-        await sleep(600);
+        await sleep(500);
       }
     }
   }
@@ -168,10 +153,25 @@ const gsRun = async (func, ...args) => {
 
     return data;
   }catch(e){
-    const msg = e?.message || '通信エラー';
-    throw new Error(msg);
+    throw new Error(e?.message || '通信エラー');
   }
 };
+
+const TRIGGER_URL = 'https://script.google.com/macros/s/AKfycbxzM8EPlE-1hwHx6qwh4Q1jXgYa0nyc3_WtK0NYbYbcm5JExMJOi1zzjQocUhsoCuUQ/exec?secret=secret1';
+
+function fireTrigger(){
+  try{
+    if (!TRIGGER_URL) return;
+    const sep = TRIGGER_URL.includes('?') ? '&' : '?';
+    const url = TRIGGER_URL + sep + 't=' + Date.now();
+    const img = new Image();
+    img.src = url;
+  }catch(_){}
+}
+
+function sleep(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function ymdLocal(date){
   const y = date.getFullYear();
@@ -264,7 +264,6 @@ let menuKeyCatalog = [];
 let menuGroupCatalog = [];
 let autoRuleCatalog = [];
 let calendarDates = [];
-let isSubmittingBooking = false;
 let hasBoundGridDelegation = false;
 
 const defaultConfig = {
@@ -343,6 +342,85 @@ const defaultMenuGroupCatalog = [
   { key: 'custom', label: 'その他（表示先なし）' }
 ];
 
+function getMenuMap(){
+  const map = {};
+  (menuMaster || []).forEach(item => {
+    map[item.key] = item;
+  });
+  return map;
+}
+
+function findCatalogByKey(key){
+  return (menuKeyCatalog || []).find(item => String(item.key || '') === String(key || '')) || null;
+}
+
+function getMenuPrice(key, fallback){
+  const map = getMenuMap();
+  if (map[key] && map[key].price !== undefined && map[key].price !== null && map[key].price !== '') {
+    return Number(map[key].price || 0);
+  }
+  return Number(fallback || 0);
+}
+
+function getMenuLabel(key, fallback){
+  const map = getMenuMap();
+  if (map[key] && map[key].label) return String(map[key].label);
+  const catalog = findCatalogByKey(key);
+  if (catalog && catalog.default_label) return String(catalog.default_label);
+  return fallback;
+}
+
+function getMenuNote(key, fallback){
+  const map = getMenuMap();
+  if (map[key] && map[key].note) return String(map[key].note);
+  return fallback || '';
+}
+
+function getMenuAutoApplyGroup(key){
+  const map = getMenuMap();
+  if (map[key] && map[key].auto_apply_group !== undefined) return String(map[key].auto_apply_group || '');
+  const catalog = findCatalogByKey(key);
+  if (catalog && catalog.auto_apply_group !== undefined) return String(catalog.auto_apply_group || '');
+  return '';
+}
+
+function getMenuAutoApplyKey(key){
+  const map = getMenuMap();
+  if (map[key] && map[key].auto_apply_key !== undefined) return String(map[key].auto_apply_key || '');
+  const catalog = findCatalogByKey(key);
+  if (catalog && catalog.auto_apply_key !== undefined) return String(catalog.auto_apply_key || '');
+  return '';
+}
+
+function getItemsByGroup(group){
+  return (menuMaster || []).filter(item => {
+    if (String(item.menu_group || '') !== String(group || '')) return false;
+    if (item.is_visible === false || String(item.is_visible).toUpperCase() === 'FALSE') return false;
+    return true;
+  }).sort((a,b) => {
+    const aOrder = Number(a.sort_order || 9999);
+    const bOrder = Number(b.sort_order || 9999);
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(a.key).localeCompare(String(b.key));
+  });
+}
+
+function getRuleByIndex(index){
+  return (autoRuleCatalog || []).find(rule => Number(rule.index) === Number(index)) || null;
+}
+
+function getRuleEnabled(index){
+  const rule = getRuleByIndex(index);
+  return !!(rule && rule.enabled);
+}
+
+function getAutoRuleByTrigger(targetGroup, triggerKey){
+  return (autoRuleCatalog || []).find(rule => {
+    if (!rule || !rule.enabled) return false;
+    return String(rule.target || '') === String(targetGroup || '') && String(rule.trigger_key || '') === String(triggerKey || '');
+  }) || null;
+}
+
 function rebuildBlockedSlotsFromSheet(blocks){
   blockedSlots = new Set();
   (blocks || []).forEach(b => {
@@ -417,19 +495,27 @@ function isSlotBlockedWithMinute(dateObj, hour, minute) {
   return false;
 }
 
+async function refreshConfigPublic(){
+  const res = await gsRun('api_getConfigPublic');
+  if (res && res.isOk){
+    config = { ...defaultConfig, ...(res.data || {}) };
+    applyConfigToUI();
+  }
+}
+
 async function refreshData(showToastOnFail=false){
   try{
     const initRes = await gsRun('api_getInitData');
     if (!initRes || !initRes.isOk) throw new Error('init failed');
 
     const data = initRes.data || {};
-    config = { ...defaultConfig, ...(data.config || {}) };
+    config = { ...defaultConfig, ...(data.config || config || {}) };
     menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
     menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
     menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
     autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
-    reservations = Array.isArray(data.reservations) ? data.reservations : [];
-    const blocks = Array.isArray(data.blocks) ? data.blocks : [];
+    reservations = data.reservations || [];
+    const blocks = data.blocks || [];
 
     rebuildBlockedSlotsFromSheet(blocks);
     rebuildReservedSlotsFromReservations(reservations);
@@ -444,11 +530,4 @@ async function refreshData(showToastOnFail=false){
 
 async function refreshAllData(showToastOnFail=false){
   await refreshData(showToastOnFail);
-}
-
-async function refreshAllDataInBackground(){
-  try{
-    await refreshAllData(false);
-    renderCalendar();
-  }catch(_){}
 }
