@@ -335,7 +335,7 @@ function updateSubmitButton(){
 
 async function waitAndRefresh_(waitMs){
   await sleep(waitMs || 700);
-  await refreshAllData(true);
+  await refreshAllData(true, { force:true });
 }
 
 async function submitBooking(e){
@@ -395,8 +395,13 @@ async function submitBooking(e){
     fireTrigger();
 
     try{
+      addLocalReservationBlock(reservation);
+      renderCalendar(false);
+    }catch(_){}
+
+    try{
       await waitAndRefresh_(800);
-      renderCalendar();
+      renderCalendar(false);
     }catch(_){}
 
     submitBtn.disabled = false;
@@ -529,14 +534,14 @@ async function init(){
   try{
     await withLoading(async ()=>{
       await refreshConfigPublic();
-      await refreshAllData(true);
+      await refreshAllData(true, { force:true });
       bindGridDelegation();
-      renderCalendar();
+      renderCalendar(true);
     }, '読み込み中...');
   }catch(e){
     try{ showLoading(false); }catch(_){}
     toast('初期化エラー: ' + (e?.message || e));
-    try{ renderCalendar(); }catch(_){}
+    try{ renderCalendar(false); }catch(_){}
   }
 }
 
@@ -605,7 +610,7 @@ async function init(){
       btn.classList.add('from-sky-500','to-sky-600','hover:from-sky-600','hover:to-sky-700');
       btn.textContent = config.calendar_toggle_extended_text || '他時間予約';
     }
-    renderCalendar();
+    renderCalendar(false);
   });
 
   const formInputs = ['privacyAgreement','usageType','customerName','phoneNumber','pickupLocation','assistanceType','equipmentRental'];
@@ -626,7 +631,7 @@ async function init(){
 
   window.addEventListener('resize', debounce(()=>{
     try{
-      renderCalendar();
+      renderCalendar(false);
     }catch(_){}
   }, 150));
 })();
