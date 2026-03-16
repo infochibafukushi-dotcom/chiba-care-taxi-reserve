@@ -54,31 +54,26 @@ function isAdminSlotBlocked(dateObj, hour, minute){
   return adminBlockedSlots.has(key) || adminReservedSlots.has(key);
 }
 
-function renderAdminCalendar(){
-  const grid = document.getElementById('adminCalendarGrid');
-  const dateRangeEl = document.getElementById('adminDateRange');
-  if (!grid || !dateRangeEl) return;
-
+function getAdminCalendarStructureState(){
   const dates = getAdminDatesRange();
-  adminCalendarDates = dates;
-
-  if (dates.length === 0) {
-    dateRangeEl.textContent = '';
-    grid.innerHTML = '';
-    return;
-  }
-
-  dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length - 1])}`;
-
   const { regularSlots, otherSlots } = buildAdminSlots();
   const slots = adminExtendedView ? otherSlots : regularSlots;
+  const signature = JSON.stringify({
+    adminExtendedView: !!adminExtendedView,
+    maxForwardDays: Number(adminConfig.max_forward_days || 30),
+    dates: dates.map(d => ymdLocal(d)),
+    slots: slots.map(s => `${s.hour}:${s.minute}`)
+  });
+  return { dates, regularSlots, otherSlots, slots, signature };
+}
 
+function buildAdminCalendarHtml(dates, slots){
   let html = '';
   html += '<div class="time-label sticky-corner">時間</div>';
 
   dates.forEach((date, idx)=>{
     const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
-    let rightBtnText = adminExtendedView ? '夜' : '日';
+    const rightBtnText = adminExtendedView ? '夜' : '日';
     html += `
       <div class="date-header sticky-top ${isWeekend ? 'weekend' : ''}">
         <div class="w-full flex items-center justify-between px-1 gap-1">
@@ -93,25 +88,87 @@ function renderAdminCalendar(){
   for (const slot of slots){
     html += `<div class="time-label sticky-left">${slot.display}</div>`;
     for (let idx=0; idx<dates.length; idx++){
-      const date = dates[idx];
-      const blocked = isAdminSlotBlocked(date, slot.hour, slot.minute);
-      const slotClass = blocked ? 'admin-slot-unavailable' : (adminExtendedView ? 'admin-slot-other' : 'admin-slot-available');
-
       html += `
-        <div class="${slotClass} p-3 text-center text-lg font-bold rounded-lg transition"
+        <div class="admin-slot-cell p-3 text-center text-lg font-bold rounded-lg transition"
              data-action="toggleSlot"
              data-date-idx="${idx}"
              data-hour="${slot.hour}"
-             data-minute="${slot.minute}">
-          ${blocked ? 'X' : '◎'}
-        </div>
+             data-minute="${slot.minute}"></div>
       `;
     }
   }
 
-  grid.innerHTML = html;
+  return html;
+}
+
+function updateAdminCalendarSlotCells(grid, dates){
+  const slotEls = grid.querySelectorAll('.admin-slot-cell[data-action="toggleSlot"]');
+  slotEls.forEach(el => {
+    const dateIdx = Number(el.dataset.dateIdx);
+    const hour = Number(el.dataset.hour);
+    const minute = Number(el.dataset.minute || 0);
+    const date = dates[dateIdx];
+    if (!date) return;
+
+    const blocked = isAdminSlotBlocked(date, hour, minute);
+    el.classList.remove('admin-slot-available', 'admin-slot-unavailable', 'admin-slot-other');
+    el.classList.add(blocked ? 'admin-slot-unavailable' : (adminExtendedView ? 'admin-slot-other' : 'admin-slot-available'));
+    el.textContent = blocked ? 'X' : '◎';
+  });
+}
+
+function renderAdminCalendar(forceFullRebuild = false){
+  const grid = document.getElementById('adminCalendarGrid');
+  const dateRangeEl = document.getElementById('adminDateRange');
+  if (!grid || !dateRangeEl) return;
+
+  const state = getAdminCalendarStructureState();
+  const { dates, slots, signature } = state;
+  adminCalendarDates = dates;
+
+  if (dates.length === 0) {
+    dateRangeEl.textContent = '';
+    grid.innerHTML = '';
+    grid.dataset.signature = '';
+    return;
+  }
+
+  dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length - 1])}`;
+
+  if (forceFullRebuild || grid.dataset.signature !== signature) {
+    grid.innerHTML = buildAdminCalendarHtml(dates, slots);
+    grid.dataset.signature = signature;
+  }
+
+  updateAdminCalendarSlotCells(grid, dates);
   adminApplyCalendarGridColumns(grid, dates.length);
   requestAnimationFrame(()=> adminApplyCalendarGridColumns(grid, dates.length));
+}
+
+function adminAddBlockLocal(dateStr, hour, minute){
+  const key = `${dateStr}-${Number(hour)}-${Number(minute || 0)}`;
+  if (!adminBlockedSlots.has(key)) adminBlockedSlots.add(key);
+
+  const exists = adminBlocks.some(b => String(normalizeDateToYMD(b.date || b.slot_date || b.dateStr || '')) === String(dateStr) && Number(b.hour) === Number(hour) && Number(b.minute || 0) === Number(minute || 0));
+  if (!exists){
+    adminBlocks.push({ date: dateStr, hour: Number(hour), minute: Number(minute || 0) });
+  }
+}
+
+function adminRemoveBlockLocal(dateStr, hour, minute){
+  const key = `${dateStr}-${Number(hour)}-${Number(minute || 0)}`;
+  adminBlockedSlots.delete(key);
+  adminBlocks = adminBlocks.filter(b => !(String(normalizeDateToYMD(b.date || b.slot_date || b.dateStr || '')) === String(dateStr) && Number(b.hour) === Number(hour) && Number(b.minute || 0) === Number(minute || 0)));
+}
+
+function adminApplyDayBlockedLocal(dateStr, isBlocked, slots){
+  (slots || []).forEach(slot => {
+    if (isBlocked){
+      adminAddBlockLocal(dateStr, slot.hour, slot.minute);
+    } else {
+      adminRemoveBlockLocal(dateStr, slot.hour, slot.minute);
+    }
+  });
 }
 
 function bindAdminGridDelegation(){
@@ -134,17 +191,28 @@ function bindAdminGridDelegation(){
         const date = adminCalendarDates[dateIdx];
         if (!date) return;
 
+        const dateStr = ymdLocal(date);
+        const wasBlocked = isAdminSlotBlocked(date, hour, minute);
+
         await withLoading(async ()=>{
           await gsRun('api_toggleBlock', {
-            dateStr: ymdLocal(date),
+            dateStr: dateStr,
             hour: hour,
             minute: minute
           });
-          await adminRefreshAllData();
         }, '枠を更新中...');
+
+        if (wasBlocked && !adminReservedSlots.has(`${dateStr}-${hour}-${minute}`)) {
+          adminRemoveBlockLocal(dateStr, hour, minute);
+        } else if (!wasBlocked) {
+          adminAddBlockLocal(dateStr, hour, minute);
+        }
+
+        renderAdminCalendar(false);
+        return;
       }
 
-      if (action === 'toggleDay'){
+      if (action === 'toggleDay' || action === 'toggleDayPart'){
         const dateIdx = Number(el.dataset.dateIdx);
         const date = adminCalendarDates[dateIdx];
         if (!date) return;
@@ -167,35 +235,11 @@ function bindAdminGridDelegation(){
             dateStr: dateStr,
             isBlocked: nextState
           });
-          await adminRefreshAllData();
-        }, '日単位ブロック更新中...');
-      }
+        }, action === 'toggleDay' ? '日単位ブロック更新中...' : '時間帯一括更新中...');
 
-      if (action === 'toggleDayPart'){
-        const dateIdx = Number(el.dataset.dateIdx);
-        const date = adminCalendarDates[dateIdx];
-        if (!date) return;
-
-        const dateStr = ymdLocal(date);
-        const targetAction = adminExtendedView ? 'api_setOtherTimeDayBlocked' : 'api_setRegularDayBlocked';
-
-        let blockedCount = 0;
-        const { regularSlots, otherSlots } = buildAdminSlots();
-        const slots = adminExtendedView ? otherSlots : regularSlots;
-        slots.forEach(slot => {
-          if (isAdminSlotBlocked(date, slot.hour, slot.minute)) blockedCount++;
-        });
-
-        const allBlocked = blockedCount === slots.length;
-        const nextState = !allBlocked;
-
-        await withLoading(async ()=>{
-          await gsRun(targetAction, {
-            dateStr: dateStr,
-            isBlocked: nextState
-          });
-          await adminRefreshAllData();
-        }, '時間帯一括更新中...');
+        adminApplyDayBlockedLocal(dateStr, nextState, slots.filter(slot => !adminReservedSlots.has(`${dateStr}-${slot.hour}-${slot.minute}`)));
+        renderAdminCalendar(false);
+        return;
       }
     }catch(err){
       toast(err?.message || '更新に失敗しました');
