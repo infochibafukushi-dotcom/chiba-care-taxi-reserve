@@ -503,31 +503,54 @@ async function refreshConfigPublic(){
   }
 }
 
-async function refreshData(showToastOnFail=false){
+async function refreshData(showToastOnFail=false, options={}){
   try{
-    const initRes = await gsRun('api_getInitData');
+    const force = !!options.force;
+    if (!force && __publicInitDataPromise){
+      const initRes = await __publicInitDataPromise;
+      return applyPublicInitData(initRes);
+    }
+
+    __publicInitDataPromise = gsRun('api_getInitData');
+    const initRes = await __publicInitDataPromise;
     if (!initRes || !initRes.isOk) throw new Error('init failed');
 
-    const data = initRes.data || {};
-    config = { ...defaultConfig, ...(data.config || config || {}) };
-    menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
-    menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
-    menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
-    autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
-    reservations = data.reservations || [];
-    const blocks = data.blocks || [];
-
-    rebuildBlockedSlotsFromSheet(blocks);
-    rebuildReservedSlotsFromReservations(reservations);
-
-    applyConfigToUI();
-    renderServiceSelectors();
+    applyPublicInitData(initRes);
   }catch(e){
     if (showToastOnFail) toast(e?.message || '通信エラー（データ取得）');
     throw e;
+  }finally{
+    __publicInitDataPromise = null;
   }
 }
 
-async function refreshAllData(showToastOnFail=false){
-  await refreshData(showToastOnFail);
+function applyPublicInitData(initRes){
+  if (!initRes || !initRes.isOk) throw new Error('init failed');
+
+  const data = initRes.data || {};
+  config = { ...defaultConfig, ...(data.config || config || {}) };
+  menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
+  menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
+  menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
+  autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
+  reservations = Array.isArray(data.reservations) ? data.reservations : [];
+  const blocks = Array.isArray(data.blocks) ? data.blocks : [];
+
+  rebuildBlockedSlotsFromSheet(blocks);
+  rebuildReservedSlotsFromReservations(reservations);
+
+  applyConfigToUI();
+  renderServiceSelectors();
 }
+
+function addLocalReservationBlock(reservation){
+  if (!reservation) return;
+  reservations = Array.isArray(reservations) ? reservations.slice() : [];
+  reservations.push({ ...reservation });
+  rebuildReservedSlotsFromReservations(reservations);
+}
+
+async function refreshAllData(showToastOnFail=false, options={}){
+  await refreshData(showToastOnFail, options);
+}
+
