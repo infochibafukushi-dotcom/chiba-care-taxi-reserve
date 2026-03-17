@@ -527,10 +527,15 @@ async function updateLogoPreview(){
 
 async function init(){
   try{
+    try{
+      hydratePublicCacheForFastPaint();
+    }catch(_){ }
+
+    bindGridDelegation();
+    renderCalendar();
+
     await withLoading(async ()=>{
-      await refreshConfigPublic();
       await refreshAllData(true);
-      bindGridDelegation();
       renderCalendar();
     }, '読み込み中...');
   }catch(e){
