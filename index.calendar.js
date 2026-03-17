@@ -48,22 +48,24 @@ function buildSlots(){
   return { regularSlots, extendedSlots };
 }
 
-function getCalendarStructureState(){
-  const dates = getDatesRange();
-  const { regularSlots, extendedSlots } = buildSlots();
-  const slots = isExtendedView ? regularSlots.concat(extendedSlots) : regularSlots;
-  const signature = JSON.stringify({
-    isExtendedView: !!isExtendedView,
-    maxForwardDays: Number(config.max_forward_days || 30),
-    same_day_enabled: String(config.same_day_enabled || '0'),
-    same_day_min_hours: String(config.same_day_min_hours || '3'),
-    dates: dates.map(d => ymdLocal(d)),
-    slots: slots.map(s => `${s.hour}:${s.minute}`)
-  });
-  return { dates, regularSlots, extendedSlots, slots, signature };
-}
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const dateRangeEl = document.getElementById('dateRange');
+  if (!grid || !dateRangeEl) return;
 
-function buildCalendarGridHtml(dates, regularSlots, extendedSlots){
+  const dates = getDatesRange();
+  calendarDates = dates;
+
+  if (dates.length === 0) {
+    dateRangeEl.textContent = '';
+    grid.innerHTML = '';
+    return;
+  }
+
+  dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length-1])}`;
+
+  const { regularSlots, extendedSlots } = buildSlots();
+
   let html = '';
   html += '<div class="time-label sticky-corner">時間</div>';
 
@@ -75,15 +77,22 @@ function buildCalendarGridHtml(dates, regularSlots, extendedSlots){
   for (const slot of regularSlots){
     html += `<div class="time-label sticky-left">${slot.display}</div>`;
     for (let idx=0; idx<dates.length; idx++){
-      html += `<div class="slot-cell p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
+      const date = dates[idx];
+      const blocked = isSlotBlockedWithMinute(date, slot.hour, slot.minute);
+      const slotClass = blocked ? 'slot-unavailable' : 'slot-available';
+
+      html += `<div class="${slotClass} p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
                 data-action="slot"
                 data-date-idx="${idx}"
                 data-hour="${slot.hour}"
-                data-minute="${slot.minute}"></div>`;
+                data-minute="${slot.minute}">
+                ${blocked ? 'X' : '◎'}
+              </div>`;
     }
   }
 
-  if (isExtendedView){
+  const shouldShowExtended = isExtendedView;
+  if (shouldShowExtended){
     html += '<div class="time-label sticky-left" style="font-weight:bold;background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 100%);color:#0e7490;border:2px solid #06b6d4;">他時間</div>';
 
     dates.forEach((date, idx)=>{
@@ -96,61 +105,23 @@ function buildCalendarGridHtml(dates, regularSlots, extendedSlots){
     for (const slot of extendedSlots){
       html += `<div class="time-label sticky-left" style="background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 100%);border:2px solid #06b6d4;color:#0e7490;font-weight:600;">${slot.display}</div>`;
       for (let idx=0; idx<dates.length; idx++){
-        html += `<div class="slot-cell p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
+        const date = dates[idx];
+        const blocked = isSlotBlockedWithMinute(date, slot.hour, slot.minute);
+        const slotClass = blocked ? 'slot-unavailable' : 'slot-alternate';
+
+        html += `<div class="${slotClass} p-3 text-center text-lg font-bold rounded-lg cursor-pointer transition"
                   data-action="slot"
                   data-date-idx="${idx}"
                   data-hour="${slot.hour}"
-                  data-minute="${slot.minute}"></div>`;
+                  data-minute="${slot.minute}">
+                  ${blocked ? 'X' : '◎'}
+                </div>`;
       }
     }
   }
 
-  return html;
-}
+  grid.innerHTML = html;
 
-function updateCalendarSlotCells(grid, dates){
-  const slotEls = grid.querySelectorAll('.slot-cell[data-action="slot"]');
-  slotEls.forEach(el => {
-    const dateIdx = Number(el.dataset.dateIdx);
-    const hour = Number(el.dataset.hour);
-    const minute = Number(el.dataset.minute || 0);
-    const date = dates[dateIdx];
-    if (!date) return;
-
-    const blocked = isSlotBlockedWithMinute(date, hour, minute);
-    const isAlt = isExtendedView && (hour > 21 || (hour === 21 && minute === 30) || hour < 6);
-
-    el.classList.remove('slot-available', 'slot-unavailable', 'slot-alternate');
-    el.classList.add(blocked ? 'slot-unavailable' : (isAlt ? 'slot-alternate' : 'slot-available'));
-    el.textContent = blocked ? 'X' : '◎';
-    el.setAttribute('aria-disabled', blocked ? 'true' : 'false');
-  });
-}
-
-function renderCalendar(forceFullRebuild = false) {
-  const grid = document.getElementById('calendarGrid');
-  const dateRangeEl = document.getElementById('dateRange');
-  if (!grid || !dateRangeEl) return;
-
-  const state = getCalendarStructureState();
-  const { dates, regularSlots, extendedSlots, signature } = state;
-  calendarDates = dates;
-
-  if (dates.length === 0) {
-    dateRangeEl.textContent = '';
-    grid.innerHTML = '';
-    grid.dataset.signature = '';
-    return;
-  }
-
-  dateRangeEl.textContent = `${formatDate(dates[0])} ～ ${formatDate(dates[dates.length-1])}`;
-
-  if (forceFullRebuild || grid.dataset.signature !== signature) {
-    grid.innerHTML = buildCalendarGridHtml(dates, regularSlots, extendedSlots);
-    grid.dataset.signature = signature;
-  }
-
-  updateCalendarSlotCells(grid, dates);
   applyCalendarGridColumns(grid, dates.length);
   requestAnimationFrame(()=> applyCalendarGridColumns(grid, dates.length));
 }
