@@ -1,5 +1,5 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxyEzT2jRliYxTSWF4GYzqUVMn4l2KHAgIhcKz_f-Gk90yDuHx1J7AbG8K-V75zyo4oMg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbymtjZPO9c7-rJ2Vfs6wE7vcz1EaVvSmnBkKN9HRLrzFdXyWYzWxzPPEQk4tJRhRBByhg/exec";
 const ADMIN_PAGE_URL = "admin.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -125,14 +125,15 @@ const gsRun = async (func, ...args) => {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getConfig`, 1, 20000);
     } else if (func === 'api_getConfigPublic') {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getConfigPublic`, 1, 20000);
-    } else if (func === 'api_getInitData') {
-      data = await _jsonpCallWithRetry(`${GAS_URL}?action=getInitData`, 1, 25000);
     } else if (func === 'api_getPublicBootstrap') {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getPublicBootstrap`, 1, 20000);
     } else if (func === 'api_getBlockedSlotKeys') {
-      const from = encodeURIComponent(args[0] || '');
-      const to = encodeURIComponent(args[1] || '');
-      data = await _jsonpCallWithRetry(`${GAS_URL}?action=getBlockedSlotKeys&from=${from}&to=${to}`, 1, 20000);
+      const range = args[0] || {};
+      const start = encodeURIComponent(String(range.start || ''));
+      const end = encodeURIComponent(String(range.end || ''));
+      data = await _jsonpCallWithRetry(`${GAS_URL}?action=getBlockedSlotKeys&start=${start}&end=${end}`, 1, 20000);
+    } else if (func === 'api_getInitData') {
+      data = await _jsonpCallWithRetry(`${GAS_URL}?action=getInitData`, 1, 25000);
     } else if (func === 'api_getMenuMaster') {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getMenuMaster`, 1, 20000);
     } else if (func === 'api_getMenuKeyCatalog') {
@@ -259,9 +260,10 @@ function debounce(fn, ms){
   };
 }
 
-let reservations = [];
 let blockedSlots = new Set();
 let reservedSlots = new Set();
+let publicBootstrapLoaded = false;
+let blockedRangeCacheKey = '';
 let selectedSlot = null;
 let config = {};
 let isExtendedView = false;
@@ -501,6 +503,51 @@ function isSlotBlockedWithMinute(dateObj, hour, minute) {
   return false;
 }
 
+
+function getPublicCalendarRange(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const maxForwardDays = Math.max(1, Number(config.max_forward_days || 30));
+  const startOffset = String(config.same_day_enabled || '0') === '1' ? 0 : 1;
+
+  const start = new Date(today);
+  start.setDate(today.getDate() + startOffset);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + maxForwardDays - 1);
+
+  return {
+    start: ymdLocal(start),
+    end: ymdLocal(end)
+  };
+}
+
+async function refreshBlockedSlotKeys(showToastOnFail=false){
+  try{
+    const range = getPublicCalendarRange();
+    const cacheKey = `${range.start}__${range.end}`;
+
+    const res = await gsRun('api_getBlockedSlotKeys', range);
+    if (!res || !res.isOk) throw new Error('blocked keys failed');
+
+    const keys = Array.isArray(res.data?.slot_keys) ? res.data.slot_keys : (Array.isArray(res.data?.keys) ? res.data.keys : []);
+    blockedSlots = new Set((keys || []).map(v => String(v || '').trim()).filter(Boolean));
+    reservedSlots = new Set();
+    blockedRangeCacheKey = cacheKey;
+  }catch(e){
+    if (showToastOnFail) toast(e?.message || '通信エラー（空き枠取得）');
+    throw e;
+  }
+}
+
+async function ensureBlockedSlotsFresh(showToastOnFail=false, force=false){
+  const range = getPublicCalendarRange();
+  const cacheKey = `${range.start}__${range.end}`;
+  if (!force && blockedRangeCacheKey === cacheKey && blockedSlots && blockedSlots.size >= 0) return;
+  await refreshBlockedSlotKeys(showToastOnFail);
+}
+
 async function refreshConfigPublic(){
   const res = await gsRun('api_getConfigPublic');
   if (res && res.isOk){
@@ -511,57 +558,26 @@ async function refreshConfigPublic(){
 
 async function refreshData(showToastOnFail=false){
   try{
-    const bootstrapRes = await gsRun('api_getPublicBootstrap');
-    if (!bootstrapRes || !bootstrapRes.isOk) throw new Error('public bootstrap failed');
+    if (!publicBootstrapLoaded){
+      const bootRes = await gsRun('api_getPublicBootstrap');
+      if (!bootRes || !bootRes.isOk) throw new Error('bootstrap failed');
 
-    const bootstrap = bootstrapRes.data || {};
-    config = { ...defaultConfig, ...(bootstrap.config || config || {}) };
-    menuMaster = Array.isArray(bootstrap.menu_master) ? bootstrap.menu_master : [];
-
-    const catalogResults = await Promise.allSettled([
-      gsRun('api_getMenuKeyCatalog'),
-      gsRun('api_getMenuGroupCatalog'),
-      gsRun('api_getAutoRuleCatalog')
-    ]);
-
-    const menuKeyRes = catalogResults[0].status === 'fulfilled' ? catalogResults[0].value : null;
-    const menuGroupRes = catalogResults[1].status === 'fulfilled' ? catalogResults[1].value : null;
-    const autoRuleRes = catalogResults[2].status === 'fulfilled' ? catalogResults[2].value : null;
-
-    menuKeyCatalog = (menuKeyRes && menuKeyRes.isOk && Array.isArray(menuKeyRes.data)) ? menuKeyRes.data : [];
-    menuGroupCatalog = (menuGroupRes && menuGroupRes.isOk && Array.isArray(menuGroupRes.data) && menuGroupRes.data.length) ? menuGroupRes.data : defaultMenuGroupCatalog;
-    autoRuleCatalog = (autoRuleRes && autoRuleRes.isOk && Array.isArray(autoRuleRes.data)) ? autoRuleRes.data : [];
-
-    reservations = [];
-    reservedSlots = new Set();
-    blockedSlots = new Set((Array.isArray(bootstrap.blocked_slot_keys) ? bootstrap.blocked_slot_keys : []).map(v => String(v || '').trim()).filter(Boolean));
-
-    applyConfigToUI();
-    renderServiceSelectors();
-  }catch(e){
-    try{
-      const initRes = await gsRun('api_getInitData');
-      if (!initRes || !initRes.isOk) throw new Error('init failed');
-
-      const data = initRes.data || {};
+      const data = bootRes.data || {};
       config = { ...defaultConfig, ...(data.config || config || {}) };
       menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
       menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
       menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
       autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
-      reservations = data.reservations || [];
-      const blocks = data.blocks || [];
-
-      rebuildBlockedSlotsFromSheet(blocks);
-      rebuildReservedSlotsFromReservations(reservations);
 
       applyConfigToUI();
       renderServiceSelectors();
-      return;
-    }catch(fallbackError){
-      if (showToastOnFail) toast(fallbackError?.message || e?.message || '通信エラー（データ取得）');
-      throw fallbackError;
+      publicBootstrapLoaded = true;
     }
+
+    await refreshBlockedSlotKeys(showToastOnFail);
+  }catch(e){
+    if (showToastOnFail) toast(e?.message || '通信エラー（データ取得）');
+    throw e;
   }
 }
 
