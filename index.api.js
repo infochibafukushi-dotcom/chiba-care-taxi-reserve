@@ -1,5 +1,5 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbymtjZPO9c7-rJ2Vfs6wE7vcz1EaVvSmnBkKN9HRLrzFdXyWYzWxzPPEQk4tJRhRBByhg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxu88C5VMsgp6eFOLAKyAv4n4X0Z4aFZnWOJIPhk5ytpdFM-7X8wMPRnUngIYGnYlTCoQ/exec";
 const ADMIN_PAGE_URL = "admin.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -163,6 +163,89 @@ const gsRun = async (func, ...args) => {
     throw new Error(e?.message || '通信エラー');
   }
 };
+
+
+const PUBLIC_BOOTSTRAP_CACHE_KEY = 'chiba_care_taxi_public_bootstrap_cache_v2';
+const PUBLIC_BLOCKED_CACHE_PREFIX = 'chiba_care_taxi_public_blocked_keys_v2__';
+const PUBLIC_BOOTSTRAP_CACHE_TTL_MS = 5 * 60 * 1000;
+const PUBLIC_BLOCKED_CACHE_TTL_MS = 2 * 60 * 1000;
+
+function _readLocalJson_(key){
+  try{
+    const raw = localStorage.getItem(String(key || ''));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }catch(_){
+    return null;
+  }
+}
+
+function _writeLocalJson_(key, value){
+  try{
+    localStorage.setItem(String(key || ''), JSON.stringify(value));
+  }catch(_){ }
+}
+
+function _isFreshCache_(entry, ttlMs){
+  if (!entry || !entry.savedAt) return false;
+  const age = Date.now() - Number(entry.savedAt || 0);
+  return age >= 0 && age <= Number(ttlMs || 0);
+}
+
+function _applyBootstrapData_(data){
+  config = { ...defaultConfig, ...(data.config || config || {}) };
+  menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
+  menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
+  menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
+  autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
+  applyConfigToUI();
+  renderServiceSelectors();
+}
+
+function _saveBootstrapCache_(data){
+  _writeLocalJson_(PUBLIC_BOOTSTRAP_CACHE_KEY, {
+    savedAt: Date.now(),
+    data: data || {}
+  });
+}
+
+function _loadBootstrapCache_(){
+  const entry = _readLocalJson_(PUBLIC_BOOTSTRAP_CACHE_KEY);
+  if (!_isFreshCache_(entry, PUBLIC_BOOTSTRAP_CACHE_TTL_MS)) return false;
+  if (!entry.data) return false;
+  _applyBootstrapData_(entry.data);
+  publicBootstrapLoaded = true;
+  return true;
+}
+
+function _blockedCacheKey_(range){
+  return PUBLIC_BLOCKED_CACHE_PREFIX + String(range.start || '') + '__' + String(range.end || '');
+}
+
+function _saveBlockedKeysCache_(range, keys){
+  _writeLocalJson_(_blockedCacheKey_(range), {
+    savedAt: Date.now(),
+    range: range,
+    keys: Array.isArray(keys) ? keys : []
+  });
+}
+
+function _loadBlockedKeysCache_(range){
+  const entry = _readLocalJson_(_blockedCacheKey_(range));
+  if (!_isFreshCache_(entry, PUBLIC_BLOCKED_CACHE_TTL_MS)) return false;
+  const keys = Array.isArray(entry.keys) ? entry.keys : [];
+  blockedSlots = new Set(keys.map(v => String(v || '').trim()).filter(Boolean));
+  reservedSlots = new Set();
+  blockedRangeCacheKey = `${range.start}__${range.end}`;
+  return true;
+}
+
+function hydratePublicCacheForFastPaint(){
+  const bootLoaded = _loadBootstrapCache_();
+  const range = getPublicCalendarRange();
+  const blockedLoaded = _loadBlockedKeysCache_(range);
+  return bootLoaded || blockedLoaded;
+}
 
 const TRIGGER_URL = 'https://script.google.com/macros/s/AKfycbxzM8EPlE-1hwHx6qwh4Q1jXgYa0nyc3_WtK0NYbYbcm5JExMJOi1zzjQocUhsoCuUQ/exec?secret=secret1';
 
@@ -535,6 +618,7 @@ async function refreshBlockedSlotKeys(showToastOnFail=false){
     blockedSlots = new Set((keys || []).map(v => String(v || '').trim()).filter(Boolean));
     reservedSlots = new Set();
     blockedRangeCacheKey = cacheKey;
+    _saveBlockedKeysCache_(range, keys || []);
   }catch(e){
     if (showToastOnFail) toast(e?.message || '通信エラー（空き枠取得）');
     throw e;
@@ -558,19 +642,17 @@ async function refreshConfigPublic(){
 
 async function refreshData(showToastOnFail=false){
   try{
+    if (!publicBootstrapLoaded) {
+      _loadBootstrapCache_();
+    }
+
     if (!publicBootstrapLoaded){
       const bootRes = await gsRun('api_getPublicBootstrap');
       if (!bootRes || !bootRes.isOk) throw new Error('bootstrap failed');
 
       const data = bootRes.data || {};
-      config = { ...defaultConfig, ...(data.config || config || {}) };
-      menuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
-      menuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
-      menuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : defaultMenuGroupCatalog;
-      autoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
-
-      applyConfigToUI();
-      renderServiceSelectors();
+      _applyBootstrapData_(data);
+      _saveBootstrapCache_(data);
       publicBootstrapLoaded = true;
     }
 
