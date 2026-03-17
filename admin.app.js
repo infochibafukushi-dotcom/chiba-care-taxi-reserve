@@ -1,41 +1,3 @@
-let adminSheetTableDirty = true;
-let adminReservationDetailIndex = null;
-let __adminInitDataPromise = null;
-
-function isAdminSheetModalOpen(){
-  const el = document.getElementById('sheetModal');
-  return !!(el && !el.classList.contains('hidden'));
-}
-
-function markAdminSheetDirty(){
-  adminSheetTableDirty = true;
-}
-
-function ensureSheetTableRendered(force=false){
-  if (!force && !adminSheetTableDirty && isAdminSheetModalOpen()) return;
-  renderReservationTable();
-  adminSheetTableDirty = false;
-}
-
-function findAdminReservationIndexById(reservationId){
-  return adminReservations.findIndex(r => String(r.reservation_id || '') === String(reservationId || ''));
-}
-
-function applyAdminReservationUpdateLocal(payload){
-  if (!payload || !payload.reservation_id) return;
-  const idx = findAdminReservationIndexById(payload.reservation_id);
-  if (idx < 0) return;
-
-  adminReservations[idx] = { ...adminReservations[idx], ...payload };
-  adminCurrentReservation = { ...adminReservations[idx] };
-
-  buildAdminReservedSlots(adminReservations);
-  renderAdminStats();
-  markAdminSheetDirty();
-  if (isAdminSheetModalOpen()) ensureSheetTableRendered(true);
-  renderAdminCalendar(false);
-}
-
 function checkAdminAuth(){
   const auth = sessionStorage.getItem('chiba_care_taxi_admin_auth');
   if (auth !== 'ok'){
@@ -49,30 +11,9 @@ function checkAdminAuth(){
   return true;
 }
 
-async function adminRefreshAllData(options={}){
-  const force = !!options.force;
-  const renderMenu = options.renderMenu !== false;
-  const renderCalendarView = options.renderCalendar !== false;
-  const renderConfigForm = options.renderConfig !== false;
-  const renderStatsView = options.renderStats !== false;
-  const renderSheet = !!options.renderSheet;
-
-  if (!force && __adminInitDataPromise){
-    const res = await __adminInitDataPromise;
-    return applyAdminInitData(res, { renderMenu, renderCalendarView, renderConfigForm, renderStatsView, renderSheet });
-  }
-
-  __adminInitDataPromise = gsRun('api_getInitData');
-  try{
-    const res = await __adminInitDataPromise;
-    applyAdminInitData(res, { renderMenu, renderCalendarView, renderConfigForm, renderStatsView, renderSheet });
-  }finally{
-    __adminInitDataPromise = null;
-  }
-}
-
-function applyAdminInitData(res, options={}){
-  const data = (res && res.data) ? res.data : {};
+async function adminRefreshAllData(){
+  const res = await gsRun('api_getInitData');
+  const data = res.data || {};
 
   adminConfig = { ...ADMIN_DEFAULT_CONFIG, ...(data.config || {}) };
   adminReservations = Array.isArray(data.reservations) ? data.reservations : [];
@@ -84,13 +25,12 @@ function applyAdminInitData(res, options={}){
 
   buildAdminBlockedSlots(adminBlocks);
   buildAdminReservedSlots(adminReservations);
-  markAdminSheetDirty();
 
-  if (options.renderConfigForm !== false) applyAdminConfigToForm();
-  if (options.renderStatsView !== false) renderAdminStats();
-  if (options.renderMenu !== false) renderMenuAdminList();
-  if (options.renderCalendarView !== false) renderAdminCalendar(true);
-  if (options.renderSheet) ensureSheetTableRendered(true);
+  applyAdminConfigToForm();
+  renderAdminStats();
+  renderMenuAdminList();
+  renderAdminCalendar();
+  renderReservationTable();
 }
 
 function renderAdminStats(){
@@ -197,7 +137,6 @@ function renderReservationTable(){
       </tr>
     `;
   }).join('');
-  adminSheetTableDirty = false;
 }
 
 function openReservationDetail(index){
@@ -205,7 +144,6 @@ function openReservationDetail(index){
   if (!r) return;
 
   adminCurrentReservation = { ...r };
-  adminReservationDetailIndex = index;
 
   document.getElementById('detailContent').innerHTML = `
     <div class="space-y-4 text-sm">
@@ -379,9 +317,9 @@ async function saveStatusUpdate(hideOnly = false){
 
   await withLoading(async ()=>{
     await gsRun('api_updateReservation', payload);
+    await adminRefreshAllData();
   }, '予約を更新中...');
 
-  applyAdminReservationUpdateLocal(payload);
   document.getElementById('detailModal').classList.add('hidden');
 }
 
@@ -407,7 +345,6 @@ function bindUI(){
   });
 
   document.getElementById('openSheetBtn').addEventListener('click', ()=>{
-    ensureSheetTableRendered();
     document.getElementById('sheetModal').classList.remove('hidden');
   });
   document.getElementById('closeSheet').addEventListener('click', ()=>{
@@ -440,7 +377,7 @@ function bindUI(){
     try{
       await withLoading(async ()=>{
         await gsRun('api_saveConfig', collectLogoConfigPayload());
-        await adminRefreshAllData({ force:true, renderSheet:isAdminSheetModalOpen() });
+        await adminRefreshAllData();
       }, '設定保存中...');
       toast('保存しました');
     }catch(err){
@@ -452,7 +389,7 @@ function bindUI(){
     try{
       await withLoading(async ()=>{
         await gsRun('api_saveConfig', collectWarningConfigPayload());
-        await adminRefreshAllData({ force:true, renderSheet:isAdminSheetModalOpen() });
+        await adminRefreshAllData();
       }, '警告文・予約表示文言保存中...');
       toast('保存しました');
     }catch(err){
@@ -464,7 +401,7 @@ function bindUI(){
     try{
       await withLoading(async ()=>{
         await gsRun('api_saveConfig', collectSameDayPayload());
-        await adminRefreshAllData({ force:true, renderSheet:isAdminSheetModalOpen() });
+        await adminRefreshAllData();
       }, '当日予約設定保存中...');
       toast('保存しました');
     }catch(err){
@@ -512,7 +449,7 @@ function bindUI(){
       const items = buildSaveMenuPayload();
       await withLoading(async ()=>{
         await gsRun('api_saveMenuMaster', { items });
-        await adminRefreshAllData({ force:true, renderSheet:isAdminSheetModalOpen() });
+        await adminRefreshAllData();
       }, 'メニュー保存中...');
       toast('保存しました');
     }catch(err){
@@ -521,14 +458,9 @@ function bindUI(){
   });
 
   window.addEventListener('resize', debounce(()=>{
-    try{
-      const grid = document.getElementById('adminCalendarGrid');
-      if (!grid) return;
-      adminApplyCalendarGridColumns(grid, adminCalendarDates.length || getAdminDatesRange().length || 0);
-    }catch(_){}
+    try{ renderAdminCalendar(); }catch(_){}
   }, 150));
 }
-
 
 async function initAdmin(){
   if (!checkAdminAuth()) return;
@@ -541,7 +473,7 @@ async function initAdmin(){
 
   try{
     await withLoading(async ()=>{
-      await adminRefreshAllData({ force:true, renderSheet:isAdminSheetModalOpen() });
+      await adminRefreshAllData();
     }, '読み込み中...');
   }catch(err){
     toast(err?.message || '初期化に失敗しました');
