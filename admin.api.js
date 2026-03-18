@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxHKiU18SzSY6Z8Ew7xWwcYsoG0IWVnGkvvH8pBY196sRJMJ0BklOiQrK53WgmndAL5KQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzIly81lDy8QocJmOoaQN45ErsitqHTuv2aiTBRZhudMbG0CDQ-PRMcXl5BeWc8xit1ew/exec";
 const PUBLIC_PAGE_URL = "index.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -119,6 +119,10 @@ const gsRun = async (func, ...args) => {
     data = await _jsonpCallWithRetry(`${GAS_URL}?action=getConfig`, 1, 20000);
   } else if (func === 'api_getInitData') {
     data = await _jsonpCallWithRetry(`${GAS_URL}?action=getInitData`, 1, 25000);
+  } else if (func === 'api_getAdminBootstrap') {
+    data = await _jsonpCallWithRetry(`${GAS_URL}?action=getAdminBootstrap`, 1, 20000);
+  } else if (func === 'api_getAdminReservations') {
+    data = await _jsonpCallWithRetry(`${GAS_URL}?action=getAdminReservations`, 1, 25000);
   } else if (func === 'api_getMenuKeyCatalog') {
     data = await _jsonpCallWithRetry(`${GAS_URL}?action=getMenuKeyCatalog`, 1, 20000);
   } else if (func === 'api_getMenuGroupCatalog') {
