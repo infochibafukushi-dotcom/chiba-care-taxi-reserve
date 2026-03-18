@@ -1,3 +1,7 @@
+let adminBootstrapLoaded = false;
+const ADMIN_BOOTSTRAP_CACHE_KEY = 'chiba_care_taxi_admin_bootstrap_cache_v1';
+const ADMIN_BOOTSTRAP_CACHE_TTL_MS = 5 * 60 * 1000;
+
 function checkAdminAuth(){
   const auth = sessionStorage.getItem('chiba_care_taxi_admin_auth');
   if (auth !== 'ok'){
@@ -11,17 +15,60 @@ function checkAdminAuth(){
   return true;
 }
 
-function applyAdminBootstrapData(data){
-  adminConfig = { ...ADMIN_DEFAULT_CONFIG, ...(data.config || {}) };
-  adminBlocks = Array.isArray(data.blocks) ? data.blocks : [];
-  adminMenuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
-  adminMenuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
-  adminMenuGroupCatalog = Array.isArray(data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : ADMIN_MENU_GROUPS;
-  adminAutoRuleCatalog = Array.isArray(data.auto_rule_catalog) ? data.auto_rule_catalog : [];
+function _readAdminSessionJson_(key){
+  try{
+    const raw = sessionStorage.getItem(String(key || ''));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }catch(_){
+    return null;
+  }
+}
 
+function _writeAdminSessionJson_(key, value){
+  try{
+    sessionStorage.setItem(String(key || ''), JSON.stringify(value));
+  }catch(_){}
+}
+
+function _isFreshAdminCache_(entry, ttlMs){
+  if (!entry || !entry.savedAt) return false;
+  const age = Date.now() - Number(entry.savedAt || 0);
+  return age >= 0 && age <= Number(ttlMs || 0);
+}
+
+function applyAdminBootstrapData(data){
+  adminConfig = { ...ADMIN_DEFAULT_CONFIG, ...((data && data.config) || {}) };
+  adminMenuMaster = Array.isArray(data && data.menu_master) ? data.menu_master : [];
+  adminMenuKeyCatalog = Array.isArray(data && data.menu_key_catalog) ? data.menu_key_catalog : [];
+  adminMenuGroupCatalog = Array.isArray(data && data.menu_group_catalog) && data.menu_group_catalog.length ? data.menu_group_catalog : ADMIN_MENU_GROUPS;
+  adminAutoRuleCatalog = Array.isArray(data && data.auto_rule_catalog) ? data.auto_rule_catalog : [];
+  adminBootstrapLoaded = true;
+}
+
+function applyAdminLiveData(data){
+  adminReservations = Array.isArray(data && data.reservations) ? data.reservations : [];
+  adminBlocks = Array.isArray(data && data.blocks) ? data.blocks : [];
   buildAdminBlockedSlots(adminBlocks);
   buildAdminReservedSlots(adminReservations);
+}
 
+function saveAdminBootstrapCache(data){
+  _writeAdminSessionJson_(ADMIN_BOOTSTRAP_CACHE_KEY, {
+    savedAt: Date.now(),
+    data: data || {}
+  });
+}
+
+function loadAdminBootstrapCache(){
+  const entry = _readAdminSessionJson_(ADMIN_BOOTSTRAP_CACHE_KEY);
+  if (!_isFreshAdminCache_(entry, ADMIN_BOOTSTRAP_CACHE_TTL_MS)) return false;
+  if (!entry.data) return false;
+  applyAdminBootstrapData(entry.data);
+  return true;
+}
+
+function renderAdminAllViews(){
   applyAdminConfigToForm();
   renderAdminStats();
   renderMenuAdminList();
@@ -29,25 +76,25 @@ function applyAdminBootstrapData(data){
   renderReservationTable();
 }
 
-async function adminRefreshBootstrap(){
-  const res = await gsRun('api_getAdminBootstrap');
-  const data = res.data || {};
-  applyAdminBootstrapData(data);
-}
+async function adminRefreshAllData(options = {}){
+  const opts = options || {};
+  const forceBootstrap = !!opts.forceBootstrap;
 
-async function adminRefreshReservations(){
-  const res = await gsRun('api_getAdminReservations');
-  const data = res.data || {};
-  adminReservations = Array.isArray(data.reservations) ? data.reservations : [];
-  buildAdminReservedSlots(adminReservations);
-  renderAdminStats();
-  renderAdminCalendar();
-  renderReservationTable();
-}
+  if (!adminBootstrapLoaded && !forceBootstrap){
+    loadAdminBootstrapCache();
+  }
 
-async function adminRefreshAllData(){
-  await adminRefreshBootstrap();
-  await adminRefreshReservations();
+  if (!adminBootstrapLoaded || forceBootstrap){
+    const bootRes = await gsRun('api_getAdminBootstrap');
+    const bootData = bootRes.data || {};
+    applyAdminBootstrapData(bootData);
+    saveAdminBootstrapCache(bootData);
+  }
+
+  const liveRes = await gsRun('api_getAdminData');
+  applyAdminLiveData(liveRes.data || {});
+
+  renderAdminAllViews();
 }
 
 function renderAdminStats(){
@@ -130,11 +177,6 @@ function applyAdminConfigToForm(){
 function renderReservationTable(){
   const body = document.getElementById('sheetTableBody');
   if (!body) return;
-
-  if (!Array.isArray(adminReservations) || adminReservations.length === 0){
-    body.innerHTML = '<tr><td colspan="16" class="border border-slate-200 p-4 text-center text-slate-500">予約一覧を読み込み中、またはデータがありません</td></tr>';;
-    return;
-  }
 
   body.innerHTML = adminReservations.map((r, idx) => {
     const status = String(r.status || '未対応');
@@ -493,19 +535,22 @@ async function initAdmin(){
   bindAdminGridDelegation();
   bindUI();
 
+  let hadFastPaint = false;
+
   try{
-    await withLoading(async ()=>{
-      await adminRefreshBootstrap();
-    }, '読み込み中...');
+    hadFastPaint = loadAdminBootstrapCache();
+    if (hadFastPaint){
+      renderAdminAllViews();
+    }
+  }catch(_){}
 
-    adminReservations = [];
-    renderAdminStats();
-    renderReservationTable();
-
-    try{
-      await adminRefreshReservations();
-    }catch(err){
-      toast(err?.message || '予約一覧の取得に失敗しました');
+  try{
+    if (hadFastPaint){
+      await adminRefreshAllData();
+    } else {
+      await withLoading(async ()=>{
+        await adminRefreshAllData();
+      }, '読み込み中...');
     }
   }catch(err){
     toast(err?.message || '初期化に失敗しました');
