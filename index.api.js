@@ -1,5 +1,5 @@
 const ADMIN_ICON_FILE_ID = '1a0QB8ei00w_lSfL4PnF_xuEFUC2JP6FW';
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxHKiU18SzSY6Z8Ew7xWwcYsoG0IWVnGkvvH8pBY196sRJMJ0BklOiQrK53WgmndAL5KQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzIly81lDy8QocJmOoaQN45ErsitqHTuv2aiTBRZhudMbG0CDQ-PRMcXl5BeWc8xit1ew/exec";
 const ADMIN_PAGE_URL = "admin.html";
 
 function toast(msg='通信エラー', ms=2200){
@@ -127,6 +127,8 @@ const gsRun = async (func, ...args) => {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getConfigPublic`, 1, 20000);
     } else if (func === 'api_getPublicBootstrap') {
       data = await _jsonpCallWithRetry(`${GAS_URL}?action=getPublicBootstrap`, 1, 20000);
+    } else if (func === 'api_getPublicInit') {
+      data = await _jsonpCallWithRetry(`${GAS_URL}?action=getPublicInit`, 1, 20000);
     } else if (func === 'api_getBlockedSlotKeys') {
       const range = args[0] || {};
       const start = encodeURIComponent(String(range.start || ''));
@@ -646,14 +648,32 @@ async function refreshData(showToastOnFail=false){
       _loadBootstrapCache_();
     }
 
-    if (!publicBootstrapLoaded){
-      const bootRes = await gsRun('api_getPublicBootstrap');
-      if (!bootRes || !bootRes.isOk) throw new Error('bootstrap failed');
+    const range = getPublicCalendarRange();
+    const hasBlockedCache = _loadBlockedKeysCache_(range);
 
-      const data = bootRes.data || {};
-      _applyBootstrapData_(data);
-      _saveBootstrapCache_(data);
+    if (!publicBootstrapLoaded || !hasBlockedCache){
+      const initRes = await gsRun('api_getPublicInit');
+      if (!initRes || !initRes.isOk) throw new Error('public init failed');
+
+      const data = initRes.data || {};
+      const bootData = {
+        config: data.config || {},
+        menu_master: data.menu_master || [],
+        menu_key_catalog: data.menu_key_catalog || [],
+        menu_group_catalog: data.menu_group_catalog || [],
+        auto_rule_catalog: data.auto_rule_catalog || []
+      };
+
+      _applyBootstrapData_(bootData);
+      _saveBootstrapCache_(bootData);
       publicBootstrapLoaded = true;
+
+      const keys = Array.isArray(data.blocked_slot_keys) ? data.blocked_slot_keys : [];
+      blockedSlots = new Set(keys.map(v => String(v || '').trim()).filter(Boolean));
+      reservedSlots = new Set();
+      blockedRangeCacheKey = `${range.start}__${range.end}`;
+      _saveBlockedKeysCache_(range, keys);
+      return;
     }
 
     await refreshBlockedSlotKeys(showToastOnFail);
