@@ -11,12 +11,8 @@ function checkAdminAuth(){
   return true;
 }
 
-async function adminRefreshAllData(){
-  const res = await gsRun('api_getInitData');
-  const data = res.data || {};
-
+function applyAdminBootstrapData(data){
   adminConfig = { ...ADMIN_DEFAULT_CONFIG, ...(data.config || {}) };
-  adminReservations = Array.isArray(data.reservations) ? data.reservations : [];
   adminBlocks = Array.isArray(data.blocks) ? data.blocks : [];
   adminMenuMaster = Array.isArray(data.menu_master) ? data.menu_master : [];
   adminMenuKeyCatalog = Array.isArray(data.menu_key_catalog) ? data.menu_key_catalog : [];
@@ -31,6 +27,27 @@ async function adminRefreshAllData(){
   renderMenuAdminList();
   renderAdminCalendar();
   renderReservationTable();
+}
+
+async function adminRefreshBootstrap(){
+  const res = await gsRun('api_getAdminBootstrap');
+  const data = res.data || {};
+  applyAdminBootstrapData(data);
+}
+
+async function adminRefreshReservations(){
+  const res = await gsRun('api_getAdminReservations');
+  const data = res.data || {};
+  adminReservations = Array.isArray(data.reservations) ? data.reservations : [];
+  buildAdminReservedSlots(adminReservations);
+  renderAdminStats();
+  renderAdminCalendar();
+  renderReservationTable();
+}
+
+async function adminRefreshAllData(){
+  await adminRefreshBootstrap();
+  await adminRefreshReservations();
 }
 
 function renderAdminStats(){
@@ -113,6 +130,11 @@ function applyAdminConfigToForm(){
 function renderReservationTable(){
   const body = document.getElementById('sheetTableBody');
   if (!body) return;
+
+  if (!Array.isArray(adminReservations) || adminReservations.length === 0){
+    body.innerHTML = '<tr><td colspan="16" class="border border-slate-200 p-4 text-center text-slate-500">予約一覧を読み込み中、またはデータがありません</td></tr>';;
+    return;
+  }
 
   body.innerHTML = adminReservations.map((r, idx) => {
     const status = String(r.status || '未対応');
@@ -473,8 +495,18 @@ async function initAdmin(){
 
   try{
     await withLoading(async ()=>{
-      await adminRefreshAllData();
+      await adminRefreshBootstrap();
     }, '読み込み中...');
+
+    adminReservations = [];
+    renderAdminStats();
+    renderReservationTable();
+
+    try{
+      await adminRefreshReservations();
+    }catch(err){
+      toast(err?.message || '予約一覧の取得に失敗しました');
+    }
   }catch(err){
     toast(err?.message || '初期化に失敗しました');
   }
