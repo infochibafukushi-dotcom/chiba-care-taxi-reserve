@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxClbXJ5WPUGq2guqTk_WtzhRYL021WMWdieF4_0VV9wR02MnZTI8CSwWFYLGPzyf7j/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyyxvXGJLXGcyTwrtFvMLrWfakbDbnmQ5qdwwOCnDumkBvlzJNaje8bqvYeUnwF70q8yA/exec";
 const PUBLIC_PAGE_URL = "index.html";
 
 function toast(msg='通信エラー', ms=2200){
