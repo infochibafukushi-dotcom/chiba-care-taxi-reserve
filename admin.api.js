@@ -117,6 +117,10 @@ const gsRun = async (func, ...args) => {
 
   if (func === 'api_getConfig') {
     data = await _jsonpCallWithRetry(`${GAS_URL}?action=getConfig`, 1, 20000);
+  } else if (func === 'api_getAdminBootstrap') {
+    data = await _jsonpCallWithRetry(`${GAS_URL}?action=getAdminBootstrap`, 1, 20000);
+  } else if (func === 'api_getAdminData') {
+    data = await _jsonpCallWithRetry(`${GAS_URL}?action=getAdminData`, 1, 25000);
   } else if (func === 'api_getInitData') {
     data = await _jsonpCallWithRetry(`${GAS_URL}?action=getInitData`, 1, 25000);
   } else if (func === 'api_getMenuKeyCatalog') {
